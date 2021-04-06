@@ -12,6 +12,7 @@ The code is implmented for our paper in CVPR2021:
  - Set up the environment using one of the following methods:
    - Using [Anaconda](https://www.anaconda.com/distribution/)
      - Run `conda env create -f env.yml`
+     - conda activate STMask-env
    - Manually with pip
      - Set up a Python3 environment.
      - Install [Pytorch](http://pytorch.org/) 1.0.1 (or higher) and TorchVision.
@@ -24,13 +25,23 @@ The code is implmented for our paper in CVPR2021:
        
  - Install mmcv and mmdet
     - install mmcv or mmcv-full from [here](https://github.com/open-mmlab/mmcv)
+      ```Shell
+      pip install mmcv-full==1.1.2 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.5.0/index.html
+      ```
     - install cocoapi
       ```Shell
       pip install "git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI"
+      cd cocoapi/PythonAPI
       pip install -v -e .  # or "python setup.py develop"
       ```
  
  - Complie DCNv2 code (see [Installation](https://github.com/dbolya/yolact#installation))
+   - Download code for deformable convolutional layers from [here](https://github.com/CharlesShang/DCNv2/tree/pytorch_1.0)
+     ```Shell
+     git clone https://github.com/CharlesShang/DCNv2.git
+     cd DCNv2
+     python setup.py build develop
+     ```
 
 # Dataset
  - If you'd like to train STMask, download the YTVOS2019 dataset from [the official web](https://youtube-vos.org/dataset/).
