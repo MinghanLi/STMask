@@ -39,14 +39,14 @@ The code is implmented for our paper in CVPR2021:
 # Evaluation
 Here are our STMask models (released on April, 2021) along with their FPS on a 2080Ti and mAP on `validset`:
 
-| Image Size | Backbone      | FCA  | FCB | TF | FPS  | mAP  | Weights                                                                                                          
-|:----------:|:-------------:|:----:|:----:|----------------------------------------------------------------------------------------------------------------------|--------|
-| [384,640]        | Resnet50-FPN  | FCA  | - | TF | 29.3 | 31.6 | [STMask_r50_FCA+TF.pth](https://drive.google.com/file/d/1TCiW-EQLEh1SrN-o7cOvKEFQy2WhkeSL/view?usp=sharing) 
-| [384,640]        | Resnet50-FPN  | FCA  | FCB(ali) | TF | - | - | [STMask_r50_ali.zip]()  
-| [384,640]        | Resnet50-FPN  | FCA  | FCB(ada) | TF | 28.6 | 33.5 | [STMask_r50_ada.pth]() 
-| [384,640]        | Resnet101-FPN | FCA  |  | TF | 24.5 | 36.0 | [STMask_r101_FCA+TF.pth](https://drive.google.com/file/d/1qgq8yC8otUMJMsffsaC288YOAwYf3OIz/view?usp=sharing)     
-| [384,640]        | Resnet101-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 | [STMask_r101_ali.pth]()     
-| [384,640]        | Resnet101-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | [STMask_r101_ada.pth]()     
+| Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | Weights |                                                                                                         
+|:----------:      |:-------------:|:----:|:----:    |----|------|------|-----------------------------------------------------------------------------------------------------------|
+| [384,640]        | Resnet50-FPN  | FCA  | -        | TF | 29.3 | 31.6 | [STMask_r50_FCA+TF.pth](https://drive.google.com/file/d/1TCiW-EQLEh1SrN-o7cOvKEFQy2WhkeSL/view?usp=sharing) |
+| [384,640]        | Resnet50-FPN  | FCA  | FCB(ali) | TF | -    | -    | [STMask_r50_ali.pth]() | 
+| [384,640]        | Resnet50-FPN  | FCA  | FCB(ada) | TF | 28.6 | 33.5 | [STMask_r50_ada.pth]()  |
+| [384,640]        | Resnet101-FPN | FCA  | -        | TF | 24.5 | 36.0 | [STMask_r101_FCA+TF.pth](https://drive.google.com/file/d/1qgq8yC8otUMJMsffsaC288YOAwYf3OIz/view?usp=sharing) |    
+| [384,640]        | Resnet101-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 | [STMask_r101_ali.pth]()  |   
+| [384,640]        | Resnet101-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | [STMask_r101_ada.pth]()  |   
 
 To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_r101_FCA+TF.pth`).
 ## Quantitative Results on YTVOS2019
