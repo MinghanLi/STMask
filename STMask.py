@@ -175,16 +175,15 @@ class STMask(nn.Module):
         for k, v in model_dict.items():
             if k not in state_dict:
                 print('init weights by Xavier:', k)
-                if 'bn3d' not in k:
-                    if 'weight' in k:
-                        nn.init.xavier_uniform_(model_dict[k])
-                    elif 'bias' in k:
-                        if cfg.use_sigmoid_focal_loss and 'conf_layer' in k:
-                            data0 = -torch.tensor(cfg.focal_loss_init_pi / (1 - cfg.focal_loss_init_pi)).log()
-                            data1 = -torch.tensor((1 - cfg.focal_loss_init_pi) / cfg.focal_loss_init_pi).log()
-                            model_dict[k] = torch.cat([data0.repeat(self.num_priors), data1.repeat((cfg.num_classes-1)*self.num_priors)])
-                        else:
-                            model_dict[k].zero_()
+                if 'weight' in k:
+                    nn.init.xavier_uniform_(model_dict[k])
+                elif 'bias' in k:
+                    if cfg.use_sigmoid_focal_loss and 'conf_layer' in k:
+                        data0 = -torch.tensor(cfg.focal_loss_init_pi / (1 - cfg.focal_loss_init_pi)).log()
+                        data1 = -torch.tensor((1 - cfg.focal_loss_init_pi) / cfg.focal_loss_init_pi).log()
+                        model_dict[k] = torch.cat([data0.repeat(self.num_priors), data1.repeat((cfg.num_classes-1)*self.num_priors)])
+                    else:
+                        model_dict[k].zero_()
 
         self.load_state_dict(model_dict)
 
@@ -289,9 +288,11 @@ class STMask(nn.Module):
 
             if cfg.temporal_fusion_module:
                 # calculate correlation map
+                fpn_ref = fpn_outs[self.correlation_selected_layer][::2].contiguous()
+                fpn_next = fpn_outs[self.correlation_selected_layer][1::2].contiguous()
                 x_ref = pred_outs['T2S_feat'][self.correlation_selected_layer][::2].contiguous()
                 x_next = pred_outs['T2S_feat'][self.correlation_selected_layer][1::2].contiguous()
-                x_corr = correlate(x_ref, x_next, patch_size=cfg.correlation_patch_size)
+                x_corr = correlate(fpn_ref, fpn_next, patch_size=cfg.correlation_patch_size)
                 pred_outs['T2S_concat_feat'] = F.relu(torch.cat([x_corr, x_ref, x_next], dim=1))
                 del pred_outs['T2S_feat']
 
@@ -313,6 +314,7 @@ class STMask(nn.Module):
 
             if cfg.temporal_fusion_module:
                 # we only use the bbox features in the P3 layer
+                pred_outs['fpn_feat'] = fpn_outs[self.correlation_selected_layer]
                 pred_outs['T2S_feat'] = pred_outs['T2S_feat'][self.correlation_selected_layer]
                 candidate = generate_candidate(pred_outs)
                 candidate_after_NMS = self.Detect_TF(self, candidate[0], is_output_candidate=True)

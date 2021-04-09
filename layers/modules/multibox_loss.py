@@ -579,7 +579,7 @@ class MultiBoxLoss(nn.Module):
             pos_pred_box = center_size(pos_pred_box)
             pos_pred_box[:, 2:] *= 1.2
             pos_pred_box = point_form(pos_pred_box)
-            pos_pred_box = torch.clamp(pos_pred_box, min=0, max=1)
+            pos_pred_box = torch.clamp(pos_pred_box, min=1e-5, max=1)
 
             if process_gt_bboxes:
                 # Note: this is in point-form
@@ -637,7 +637,9 @@ class MultiBoxLoss(nn.Module):
             if cfg.mask_proto_crop:
                 pos_get_csize = center_size(pos_gt_box_t)
                 gt_box_width = pos_get_csize[:, 2] * mask_gt_w
+                gt_box_width = torch.clamp(gt_box_width, min=1)
                 gt_box_height = pos_get_csize[:, 3] * mask_gt_h
+                gt_box_height = torch.clamp(gt_box_height, min=1)
                 pre_loss = pre_loss.sum(dim=(0, 1)) / gt_box_width / gt_box_height
                 loss_m += torch.sum(pos_weights_per_img[idx] * pre_loss)
             else:

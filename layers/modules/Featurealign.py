@@ -14,6 +14,7 @@ class FeatureAlign(nn.Module):
         if isinstance(kernel_size, int):
             kernel_size = (kernel_size, kernel_size)
         self.kernel_size = kernel_size
+        self.padding = ((kernel_size[0] - 1) // 2, (kernel_size[1] - 1) // 2)
         self.use_pred_offset = use_pred_offset
 
         if self.use_pred_offset:
@@ -24,12 +25,15 @@ class FeatureAlign(nn.Module):
                                          bias=False)
 
         self.conv_adaption = DeformConv2d(in_channels,
-                                          out_channels,
-                                          kernel_size=kernel_size,
-                                          padding=((kernel_size[0] - 1) // 2, (kernel_size[1] - 1) // 2),
+                                          in_channels,
+                                          kernel_size=self.kernel_size,
+                                          padding=self.padding,
                                           deform_groups=deformable_groups)
+        self.conv = nn.Conv2d(in_channels, out_channels,
+                              kernel_size=self.kernel_size, padding=self.padding)
+
         self.relu = nn.ReLU(inplace=True)
-        # self.norm = nn.GroupNorm(32, in_channels)
+        # self.norm = nn.BatchNorm2d(in_channels)
 
     def init_weights(self, bias_value=0):
         torch.nn.init.normal_(self.conv_offset.weight, std=0.0)
@@ -64,8 +68,9 @@ class FeatureAlign(nn.Module):
             offset = torch.stack([dy + dh, dx + dw], dim=1).permute(0, 2, 1, 3).contiguous()
             offset = offset.view(batch_size, -1, x.size(2), x.size(3))
 
+        # x = self.conv_adaption(x, offset)
         x = self.relu(self.conv_adaption(x, offset))
-        # x = self.relu(self.norm(self.conv_adaption(x, offset)))
+        x = self.conv(x)
         return x
 
 

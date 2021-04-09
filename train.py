@@ -210,7 +210,7 @@ def train():
             args.start_iter = SavePath.from_str(args.resume).iteration
     else:
         print('Initializing weights based COCO ...')
-        STMask_net.init_weights_coco(backbone_path='weights/' + cfg.backbone.path)
+        STMask_net.init_weights(backbone_path='weights/' + cfg.backbone.path)
 
     optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.decay)
 

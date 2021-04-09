@@ -12,15 +12,15 @@ class CandidateShift(object):
         self.correlation_patch_size = cfg.correlation_patch_size
         self.correlation_selected_layer = cfg.correlation_selected_layer
 
-    def __call__(self, net, ref_candidate, box_feat_next, img=None, img_meta=None):
+    def __call__(self, net, ref_candidate, box_feat_next, fpn_feat_next, img=None, img_meta=None):
         # extend the frames from time t to t+1
-        ref_candidate_shift = self.candidate_shift(net, box_feat_next, ref_candidate, img,
+        ref_candidate_shift = self.candidate_shift(net, box_feat_next, fpn_feat_next, ref_candidate, img,
                                                    img_meta=img_meta,
                                                    correlation_patch_size=self.correlation_patch_size)
 
         return ref_candidate_shift
 
-    def candidate_shift(self, net, T2S_feat_next, ref_candidate,
+    def candidate_shift(self, net, T2S_feat_next, fpn_feat_next, ref_candidate,
                         img=None, img_meta=None, correlation_patch_size=11):
         """
         The function try to shift the candidates of reference frame to that of target frame.
@@ -32,17 +32,19 @@ class CandidateShift(object):
         :return: candidates on the target frame
         """
         ref_candidate_shift = {'T2S_feat': ref_candidate['T2S_feat'].clone(),
+                               'fpn_feat': ref_candidate['fpn_feat'].clone(),
                                'proto': ref_candidate['proto'].clone()}
 
         if ref_candidate['box'].size(0) == 0:
             ref_candidate_shift['box'] = torch.tensor([])
             for k, v in ref_candidate.items():
-                if k not in {'box', 'T2S_feat'}:
+                if k not in {'box', 'T2S_feat', 'fpn_feat'}:
                     ref_candidate_shift[k] = v.clone()
         else:
-            # we only use the features in the P3 layer
+            # we only use the features in the P3 layer to perform correlation operation
             T2S_feat_ref = ref_candidate['T2S_feat']
-            x_corr = correlate(T2S_feat_ref, T2S_feat_next, patch_size=correlation_patch_size)
+            fpn_feat_ref = ref_candidate['fpn_feat']
+            x_corr = correlate(fpn_feat_ref, fpn_feat_next, patch_size=correlation_patch_size)
             # display_correlation_map(fpn_ref, img_meta, idx)
             concatenated_features = F.relu(torch.cat([x_corr, T2S_feat_ref, T2S_feat_next], dim=1))
 
@@ -83,15 +85,14 @@ def generate_candidate(predictions):
         mask_data = predictions['mask_coeff'][i]
         track_data = predictions['track'][i] if cfg.train_track else None
 
-        candidate_cur = {'T2S_feat': predictions['T2S_feat'][i].unsqueeze(0)}
+        candidate_cur = {'T2S_feat': predictions['T2S_feat'][i].unsqueeze(0),
+                         'fpn_feat': predictions['fpn_feat'][i].unsqueeze(0)}
 
         with timer.env('Detect'):
             decoded_boxes = decode(loc_data, prior_data)
 
             conf_data = conf_data.t().contiguous()
             cur_scores = conf_data[1:, :]
-            if cfg.train_centerness:
-                cur_scores = cur_scores * centerness_data.t()
             conf_scores, _ = torch.max(cur_scores, dim=0)
 
             keep = (conf_scores > cfg.eval_conf_thresh)
@@ -123,7 +124,7 @@ def merge_candidates(candidate, ref_candidate_clip_shift):
     for ref_candidate in ref_candidate_clip_shift:
         if ref_candidate['box'].nelement() > 0:
             for k, v in merged_candidate.items():
-                if k not in {'proto', 'T2S_feat'}:
+                if k not in {'proto', 'T2S_feat', 'fpn_feat'}:
                     merged_candidate[k] = torch.cat([v.clone(), ref_candidate[k].clone()], dim=0)
 
     return merged_candidate
@@ -167,7 +168,7 @@ def cc_fast_nms(boxes, conf, DIoU_scores, proto_data, mask_coeff, iou_threshold:
     return idx_out
 
 
-def compute_comp_scores(match_ll, bbox_scores, bbox_ious, mask_ious, add_bbox_dummy=False, bbox_dummy_iou=0,
+def compute_comp_scores(match_ll, bbox_scores, bbox_ious, mask_ious, label_delta, add_bbox_dummy=False, bbox_dummy_iou=0,
                         match_coeff=None):
     # compute comprehensive matching score based on matchig likelihood,
     # bbox confidence, and ious
@@ -176,13 +177,18 @@ def compute_comp_scores(match_ll, bbox_scores, bbox_ious, mask_ious, add_bbox_du
                                     device=torch.cuda.current_device()) * bbox_dummy_iou
         bbox_ious = torch.cat((bbox_iou_dummy, bbox_ious), dim=1)
         mask_ious = torch.cat((bbox_iou_dummy, mask_ious), dim=1)
+        label_dummy = torch.ones(bbox_ious.size(0), 1,
+                                 device=torch.cuda.current_device())
+        label_delta = torch.cat((label_dummy, label_delta), dim=1)
 
     if match_coeff is None:
         return match_ll
     else:
         # match coeff needs to be length of 4
-        assert (len(match_coeff) == 3)
+        assert (len(match_coeff) == 4)
         return match_ll + match_coeff[0] * bbox_scores \
                + match_coeff[1] * mask_ious \
-               + match_coeff[2] * bbox_ious
+               + match_coeff[2] * bbox_ious \
+               + match_coeff[3] * label_delta
+
 

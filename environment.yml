@@ -1,0 +1,30 @@
+# Installs dependencies for YOLACT managed by Anaconda.
+# Advantage is you get working CUDA+cuDNN+pytorch+torchvison versions.
+#
+# TODO: you must additionally install nVidia drivers, eg. on Ubuntu linux
+# `apt install nvidia-driver-440` (change the 440 for whatever version you need/have).
+#
+name: STMask-env
+#prefix: /your/custom/path/envs/STMask-env
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python==3.7
+  - pip
+  - cython
+  - pytorch::torchvision ==0.5.0
+  - pytorch::pytorch ==1.4.0
+  - cudatoolkit
+  - cudnn
+  - pytorch::cuda100
+  - matplotlib
+  - git
+  - pip:
+    - opencv-python
+    - pillow <7.0 # bug PILLOW_VERSION in torchvision, must be < 7.0 until torchvision is upgraded
+    - pycocotools
+    - PyQt5 # needed on KDE/Qt envs for matplotlib
+
+

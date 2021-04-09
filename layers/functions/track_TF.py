@@ -84,7 +84,9 @@ class Track_TF(object):
 
                 assert self.prev_candidate is not None
                 T2S_feat_next = candidate['T2S_feat']
-                prev_candidate_shift = self.CandidateShift(net, self.prev_candidate, T2S_feat_next, img=img, img_meta=[img_meta])
+                fpn_feat_next = candidate['fpn_feat']
+                prev_candidate_shift = self.CandidateShift(net, self.prev_candidate, T2S_feat_next, fpn_feat_next,
+                                                           img=img, img_meta=[img_meta])
                 self.prev_candidate['box'] = prev_candidate_shift['box'].clone()
                 self.prev_candidate['conf'] = prev_candidate_shift['conf'].clone()
                 self.prev_candidate['mask_coeff'] = prev_candidate_shift['mask_coeff'].clone()
@@ -107,10 +109,13 @@ class Track_TF(object):
                 # print(img_meta['video_id'], img_meta['frame_id'], cos_sim[:, 1:], mask_ious)
 
                 # compute comprehensive score
+                prev_det_score, prev_det_labels = self.prev_candidate['conf'][:, 1:].max(1)  # class
+                label_delta = (prev_det_labels == det_labels.view(-1, 1)).float()
                 comp_scores = compute_comp_scores(cos_sim,
                                                   det_score.view(-1, 1),
                                                   bbox_ious,
                                                   mask_ious,
+                                                  label_delta,
                                                   add_bbox_dummy=True,
                                                   bbox_dummy_iou=0.3,
                                                   match_coeff=cfg.match_coeff)
@@ -126,7 +131,7 @@ class Track_TF(object):
                     if match_id == 0:
                         det_obj_ids[idx] = self.prev_candidate['conf'].size(0)
                         for k, v in self.prev_candidate.items():
-                            if k not in {'proto', 'T2S_feat', 'tracked_mask'}:
+                            if k not in {'proto', 'T2S_feat', 'fpn_feat', 'tracked_mask'}:
                                 self.prev_candidate[k] = torch.cat([v, candidate[k][idx][None]], dim=0)
                         self.prev_candidate['tracked_mask'] = torch.cat([self.prev_candidate['tracked_mask'],
                                                                          torch.zeros(1)], dim=0)
@@ -144,12 +149,12 @@ class Track_TF(object):
                             best_match_idx[obj_id] = idx
                             # udpate feature
                             for k, v in self.prev_candidate.items():
-                                if k not in {'proto', 'T2S_feat', 'tracked_mask'}:
+                                if k not in {'proto', 'T2S_feat', 'fpn_feat', 'tracked_mask'}:
                                     self.prev_candidate[k][obj_id] = candidate[k][idx]
                             self.prev_candidate['tracked_mask'][obj_id] = 0
 
                 for k, v in self.prev_candidate.items():
-                    if k in {'proto', 'T2S_feat'}:
+                    if k in {'proto', 'T2S_feat', 'fpn_feat'}:
                         self.prev_candidate[k] = candidate[k]
 
             det_score, _ = self.prev_candidate['conf'][:, 1:].max(1)
@@ -161,12 +166,12 @@ class Track_TF(object):
                                           cfg.use_sipmask)
 
             # whether add some tracked masks
-            # cond1 = self.prev_candidate['tracked_mask'] > 0
+            cond1 = self.prev_candidate['tracked_mask'] <= 7
             # whether tracked masks are greater than a small threshold, which removes some false positives
-            cond2 = det_masks_out.sum([1, 2]) > 10
+            cond2 = det_masks_out.gt_(0.5).sum([1, 2]) > 2
             # a declining weights (0.8) to remove some false positives that cased by consecutively track to segment
             cond3 = det_score.clone().detach() > cfg.eval_conf_thresh
-            keep = cond2 & cond3
+            keep = cond1 & cond2 & cond3
 
             if keep.sum() == 0:
                 detection = {'box': torch.Tensor(), 'mask_coeff': torch.Tensor(), 'class': torch.Tensor(),

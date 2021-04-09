@@ -17,9 +17,9 @@ class TemporalNet(nn.Module):
         self.pool = nn.AvgPool2d((7, 7), stride=1)
         self.fc = nn.Linear(1024, 4)
         if cfg.use_sipmask:
-            self.fc_coeff = nn.Linear(1024, 32 * cfg.sipmask_head)
+            self.fc_coeff = nn.Linear(1024, 8 * cfg.sipmask_head)
         else:
-            self.fc_coeff = nn.Linear(1024, 32)
+            self.fc_coeff = nn.Linear(1024, 8)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -37,6 +37,7 @@ class TemporalNet(nn.Module):
         x_reg = torch.cat([x_reg[:, :2] * variances[0], x_reg[:, 2:] * variances[1]], dim=1)
 
         return x_reg, x_coeff
+
 
 def correlate(x1, x2, patch_size=11, dilation_patch=1):
     """

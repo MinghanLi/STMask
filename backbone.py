@@ -62,7 +62,7 @@ class ResNetBackbone(nn.Module):
     """ Adapted from torchvision.models.resnet """
 
     def __init__(self, layers, dcn_layers=[0, 0, 0, 0], dcn_interval=1, atrous_layers=[], stride_layers=[1, 2, 2, 2],
-                 block=Bottleneck, frozen_stages=1, norm_layer=nn.BatchNorm2d):
+                 block=Bottleneck, frozen_stages=-1, norm_layer=nn.BatchNorm2d):
         super().__init__()
 
         # These will be populated by _make_layer

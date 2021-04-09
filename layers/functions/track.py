@@ -132,10 +132,12 @@ class Track(object):
                 bbox_ious = bbox_ious - term_DIoU
 
             # compute comprehensive score
+            label_delta = (self.prev_det_labels == det_labels.view(-1, 1)).float()
             comp_scores = compute_comp_scores(cos_sim,
                                               det_score.view(-1, 1),
                                               bbox_ious,
                                               mask_ious,
+                                              label_delta,
                                               add_bbox_dummy=True,
                                               bbox_dummy_iou=0.3,
                                               match_coeff=cfg.match_coeff)

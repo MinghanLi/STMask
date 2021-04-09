@@ -185,7 +185,7 @@ backbone_base = Config({
 
 resnet101_backbone = backbone_base.copy({
     'name': 'ResNet101',
-    'path': 'yolact_plus_base_54_800000_coco.pth',
+    'path': 'yolact_base_54_800000.pth',
     # 'path': 'resnet101_reducedfc.pth',
     'type': ResNetBackbone,
     'args': ([3, 4, 23, 3],),
@@ -210,6 +210,7 @@ resnet101_gn_backbone = backbone_base.copy({
 
 resnet101_dcn_inter3_backbone = resnet101_backbone.copy({
     'name': 'ResNet101_DCN_Interval3',
+    'path': 'yolact_plus_base_54_800000.pth',
     'args': ([3, 4, 23, 3], [0, 4, 23, 3], 3),
 })
 
@@ -220,7 +221,7 @@ resnet101_gn_dcn_inter3_backbone = resnet101_gn_backbone.copy({
 
 resnet50_backbone = resnet101_backbone.copy({
     'name': 'ResNet50',
-    'path': 'yolact_resnet50_54_800000_coco.pth',
+    'path': 'yolact_resnet50_54_800000.pth',
     'type': ResNetBackbone,
     'args': ([3, 4, 6, 3],),
     'transform': resnet_transform,
@@ -228,7 +229,7 @@ resnet50_backbone = resnet101_backbone.copy({
 
 resnet50_dcn_inter3_backbone = resnet50_backbone.copy({
     'name': 'ResNet50_DCN_Interval3',
-    'path': 'yolact_plus_resnet50_54_800000_coco.pth',
+    'path': 'yolact_plus_resnet50_54.pth',
     'args': ([3, 4, 6, 3], [0, 4, 6, 3], 3),
 })
 
@@ -565,7 +566,7 @@ STMask_base_config = YouTube_VOS_base_config.copy({
         'selected_layers': list(range(1, 4)),
 
         'pred_aspect_ratios': [[[ [3, 3], [3, 5],  [5, 3] ]]] * 5,
-        'pred_scales': [[i*2**(j/2.0) for j in range(2)] for i in [24, 48, 96, 192, 384]],
+        'pred_scales': [[i*2**(j/1.0) for j in range(1)] for i in [24, 48, 96, 192, 384]],
     }),
 
     # FPN Settings
@@ -578,7 +579,7 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     # FCA and prediction module settings
     'share_prediction_module': True,
     'extra_head_net': [(256, 3, {'padding': 1})],
-    'extra_layers': (1, 1, 1, 1),
+    'extra_layers': (2, 2, 2, 2),
     'head_layer_params': {0: {'kernel_size': [3, 3], 'padding': (1, 1)},
                           1: {'kernel_size': [3, 5], 'padding': (1, 2)},
                           2: {'kernel_size': [5, 3], 'padding': (2, 1)}},
@@ -588,7 +589,7 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     'mask_alpha': 6.125,
     'mask_proto_src': 0,
     'mask_proto_crop': True,
-    'mask_proto_net': [(256, 3, {'padding': 1})] * 3 + [(None, -2, {}), (256, 3, {'padding': 1})] + [(32, 1, {})],
+    'mask_proto_net': [(256, 3, {'padding': 1})] * 3 + [(None, -2, {}), (256, 3, {'padding': 1})] + [(8, 1, {})],
     'use_rela_coord': False,
     'mask_proto_normalize_emulate_roi_pooling': False,
     'discard_mask_area': 5 * 5,
@@ -602,12 +603,12 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     # train boxes
     'train_boxes': True,
     'train_class': True,
-    'use_sigmoid_focal_loss': True,
+    'use_sigmoid_focal_loss': False,
     'train_centerness': True,
 
     # Track settings
     'train_track': True,
-    'match_coeff': [0, 0.7, 0.3],   # scores, mask_iou, label
+    'match_coeff': [0, 0.7, 0.3, 0],   # scores, mask_iou, box_iou, label
     'embed_dim': 128,
 
     # temporal fusion module settings
@@ -640,8 +641,8 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     # eval
     'nms_conf_thresh': 0.05,
     'nms_thresh': 0.5,
-    'eval_conf_thresh': 0.1,
-    'candidate_conf_thresh': 0.1,
+    'eval_conf_thresh': 0.05,
+    'candidate_conf_thresh': 0.05,
     'nms_as_miou': False,
     'remove_false_inst': True,
     'add_missed_masks': False,

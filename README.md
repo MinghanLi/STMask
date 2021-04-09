@@ -3,6 +3,9 @@
 The code is implmented for our paper in CVPR2021:
  - [STMask: Spatial Feature Calibration and Temporal Fusion for Effective One-stage Video Instance Segmentation](http://www4.comp.polyu.edu.hk/~cslzhang/papers.htm)
 
+![avatar](https://drive.google.com/file/d/1RAxysb_eVLeiOdZDaW6NbBpqpYehDYzh/view?usp=sharing)
+
+
 # Installation
  - Clone this repository and enter it:
    ```Shell
@@ -70,8 +73,8 @@ python eval.py --trained_model=weights/STMask_r101_FCA+TF.pth --mask_det_file=we
 # Training
 By default, we train on YouTubeVOS2019 dataset. Make sure to download the entire dataset using the commands above.
  - To train, grab an COCO-pretrained model and put it in `./weights`.
-   - For Resnet101, download `yolact_plus_base_54_800000.pth` from [here](https://github.com/dbolya/yolact).
-   - For Resnet50, download `yolact_plus_resnet50_54_800000.pth` from [here](https://github.com/dbolya/yolact).
+   - For Resnet50, download `yolact_plus_resnet50_54.pth` from [here](https://drive.google.com/file/d/18bGj_pgKGojtnn8ni5XPbAUBNWGHkQbN/view?usp=sharing).
+   - For Resnet101, download `yolact_plus_base_54_80000.pth` from [here](https://github.com/dbolya/yolact).
 - Run one of the training commands below.
    - Note that you can press ctrl+c while training and it will save an `*_interrupt.pth` file at the current iteration.
    - All weights are saved in the `./weights` directory by default with the file name `<config>_<epoch>_<iter>.pth`.
