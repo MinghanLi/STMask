@@ -3,8 +3,7 @@
 The code is implmented for our paper in CVPR2021:
  - [STMask: Spatial Feature Calibration and Temporal Fusion for Effective One-stage Video Instance Segmentation](http://www4.comp.polyu.edu.hk/~cslzhang/papers.htm)
 
-![avatar](https://drive.google.com/file/d/1RAxysb_eVLeiOdZDaW6NbBpqpYehDYzh/view?usp=sharing)
-
+![image](https://drive.google.com/file/d/1RAxysb_eVLeiOdZDaW6NbBpqpYehDYzh/view?usp=sharing)
 
 # Installation
  - Clone this repository and enter it:
