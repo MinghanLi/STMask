@@ -16,7 +16,7 @@ The code is implmented for our paper in CVPR2021:
    ```
  - Set up the environment using one of the following methods:
    - Using [Anaconda](https://www.anaconda.com/distribution/)
-     - Run `conda env create -f env.yml`
+     - Run `conda env create -f environment.yml`
      - conda activate STMask-env
    - Manually with pip
      - Set up a Python3 environment.
@@ -29,15 +29,19 @@ The code is implmented for our paper in CVPR2021:
        ```
        
  - Install mmcv and mmdet
-    - install mmcv or mmcv-full from [here](https://github.com/open-mmlab/mmcv)
+    - According to your Cuda and pytorch version to install mmcv or mmcv-full from [here](https://github.com/open-mmlab/mmcv). Here my cuda and torch version are 10.1 and 1.5.0 respectively. 
       ```Shell
       pip install mmcv-full==1.1.2 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.5.0/index.html
       ```
-    - install cocoapi
+    - install cocoapi and a customized COCO API for YouTubeVIS dataset from [here](https://github.com/youtubevos/cocoapi)
       ```Shell
       pip install "git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI"
+      git clone https://github.com/youtubevos/cocoapi
       cd cocoapi/PythonAPI
-      pip install -v -e .  # or "python setup.py develop"
+      # To compile and install locally 
+      python setup.py build_ext --inplace
+      # To install library to Python site-packages 
+      python setup.py build_ext install
       ```
 
  - Install spatial-correlation-sampler 
@@ -63,28 +67,28 @@ Here are our STMask models (released on April, 2021) along with their FPS on a 2
 
 | Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | mAP* | Weights |                                                                                                         
 |:----------:      |:-------------:|:----:|:----:    |----|------|------|------|-----------------------------------------------------------------------------------------------------------|
-| [384, 640]        | R50-DCN-FPN  | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |
-| [384, 640]        | R50-DCN-FPN  | FCA  | FCB(ali) | TF | 27.8 | -    |      | [STMask_plus_resnet50_ali.pth]() | 
-| [384, 640]        | R50-DCN-FPN  | FCA  | FCB(ada) | TF | 28.6 | 32.9 |      | [STMask_plus_resnet50_ada.pth]() |
-| [384, 640]        | R101-DCN-FPN | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |    
-| [384, 640]        | R101-DCN-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 |      | [STMask_plus_base_ali.pth]()  |   
-| [384, 640]        | R101-DCN-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth]()  |   
+| [384,640]        | R50-DCN-FPN  | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |
+| [384,640]        | R50-DCN-FPN  | FCA  | FCB(ali) | TF | 27.8 | -    |      | [STMask_plus_resnet50_ali.pth]() | 
+| [384,640]        | R50-DCN-FPN  | FCA  | FCB(ada) | TF | 28.6 | 32.9 |      | [STMask_plus_resnet50_ada.pth]() |
+| [384,640]        | R101-DCN-FPN | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |    
+| [384,640]        | R101-DCN-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 |      | [STMask_plus_base_ali.pth]()  |   
+| [384,640]        | R101-DCN-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth]()  |   
 
 To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_plus_base.pth`). 
 Here all STMask models are trained based on `yolact_plus_base_54_80000.pth` or `yolact_plus_resnet_54_80000.pth` from Yolact++ [here](https://github.com/dbolya/yolact).
 
 ## Quantitative Results on COCO
 
-We also provide those trained quantitative results of Yolcat++ with our proposed feature calibration for anchors and boxes on COCO. Here are the results on COCO valid set.
+We also provide quantitative results of Yolcat++ with our proposed feature calibration for anchors and boxes on COCO. Here are the results on COCO valid set.
 
 | Image Size        | Backbone      | FCA  | FCB     | B_AP | M_AP | Weights |                                                                                                         
 |:----------:       |:-------------:|:----:|:----:   |------|------|---------------------------------------------------------------------------------------------------------------|
-| [550, 550]        | R50-DCN-FPN  | FCA  | -        | 34.5 | 32.9 |[yolact_plus_resnet50_54.pth](https://drive.google.com/file/d/18bGj_pgKGojtnn8ni5XPbAUBNWGHkQbN/view?usp=sharing) |
-| [550, 550]        | R50-DCN-FPN  | FCA  | FCB(ali) |      |      |[yolact_plus_resnet50_ali_54.pth]() | 
-| [550, 550]        | R50-DCN-FPN  | FCA  | FCB(ada) | 34.7 | 33.2 |[yolact_plus_resnet50_ada_54.pth](https://drive.google.com/file/d/12nEvCra-nU2nPQn0RN5OT_NXF-in1VzL/view?usp=sharing)  |
-| [550, 550]        | R101-DCN-FPN | FCA  | -        | 35.7 | 33.3 |[yolact_plus_base.pth](https://drive.google.com/file/d/1TwtfP89h4-UJawsOetvSkVJmwZbjWHkk/view?usp=sharing) |    
-| [550, 550]        | R101-DCN-FPN | FCA  | FCB(ali) |      |      |[yolact_plus_base_ali_54.pth]()  |   
-| [550, 550]        | R101-DCN-FPN | FCA  | FCB(ada) | 36.4 | 34.8 |[yolact_plus_baseada_54.pth](https://drive.google.com/file/d/1xpIeTe2kUMcyw0Ud0nbHZJlXHhBywrfM/view?usp=sharing)  |   
+| [550,550]        | R50-DCN-FPN  | FCA  | -        | 34.5 | 32.9 |[yolact_plus_resnet50_54.pth](https://drive.google.com/file/d/18bGj_pgKGojtnn8ni5XPbAUBNWGHkQbN/view?usp=sharing) |
+| [550,550]        | R50-DCN-FPN  | FCA  | FCB(ali) |      |      |[yolact_plus_resnet50_ali_54.pth]() | 
+| [550,550]        | R50-DCN-FPN  | FCA  | FCB(ada) | 34.7 | 33.2 |[yolact_plus_resnet50_ada_54.pth](https://drive.google.com/file/d/12nEvCra-nU2nPQn0RN5OT_NXF-in1VzL/view?usp=sharing)  |
+| [550,550]        | R101-DCN-FPN | FCA  | -        | 35.7 | 33.3 |[yolact_plus_base.pth](https://drive.google.com/file/d/1TwtfP89h4-UJawsOetvSkVJmwZbjWHkk/view?usp=sharing) |    
+| [550,550]        | R101-DCN-FPN | FCA  | FCB(ali) |      |      |[yolact_plus_base_ali_54.pth]()  |   
+| [550,550]        | R101-DCN-FPN | FCA  | FCB(ada) | 36.4 | 34.8 |[yolact_plus_baseada_54.pth](https://drive.google.com/file/d/1xpIeTe2kUMcyw0Ud0nbHZJlXHhBywrfM/view?usp=sharing)  |   
 
 
 # Inference
