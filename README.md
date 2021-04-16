@@ -39,6 +39,11 @@ The code is implmented for our paper in CVPR2021:
       cd cocoapi/PythonAPI
       pip install -v -e .  # or "python setup.py develop"
       ```
+
+ - Install spatial-correlation-sampler 
+      ```Shell
+      pip install spatial-correlation-sampler
+      ```
  
  - Complie DCNv2 code (see [Installation](https://github.com/dbolya/yolact#installation))
    - Download code for deformable convolutional layers from [here](https://github.com/CharlesShang/DCNv2/tree/pytorch_1.0)
@@ -69,12 +74,8 @@ To evalute the model, put the corresponding weights file in the `./weights` dire
 Here all STMask models are trained based on `yolact_plus_base_54_80000.pth` or `yolact_plus_resnet_54_80000.pth` from Yolact++ [here](https://github.com/dbolya/yolact).
 
 ## Quantitative Results on COCO
-```Shell
-# Output a YTVOSEval json to submit to the website.
-# This command will create './weights/results.json' for instance segmentation.
-python eval.py --trained_model=weights/STMask_r101_FCA+TF.pth --mask_det_file=weights/results.json
-```
-We also provide those trained quantitative results of Yolcat++ with our proposed feature calibration for anchors and boxes on COCO.
+
+We also provide those trained quantitative results of Yolcat++ with our proposed feature calibration for anchors and boxes on COCO. Here are the results on COCO valid set.
 
 | Image Size        | Backbone      | FCA  | FCB     | B_AP | M_AP | Weights |                                                                                                         
 |:----------:       |:-------------:|:----:|:----:   |------|------|---------------------------------------------------------------------------------------------------------------|
@@ -86,7 +87,7 @@ We also provide those trained quantitative results of Yolcat++ with our proposed
 | [550, 550]        | R101-DCN-FPN | FCA  | FCB(ada) | 36.4 | 34.8 |[yolact_plus_baseada_54.pth](https://drive.google.com/file/d/1xpIeTe2kUMcyw0Ud0nbHZJlXHhBywrfM/view?usp=sharing)  |   
 
 
-# inference
+# Inference
 ```Shell
 # Output a YTVOSEval json to submit to the website.
 # This command will create './weights/results.json' for instance segmentation.
