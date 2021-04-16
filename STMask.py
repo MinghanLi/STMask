@@ -102,7 +102,7 @@ class STMask(nn.Module):
         # parameters in temporal correlation net
         if cfg.temporal_fusion_module:
             corr_channels = 2*in_channels + cfg.correlation_patch_size**2
-            self.TemporalNet = TemporalNet(corr_channels)
+            self.TemporalNet = TemporalNet(corr_channels, cfg.mask_proto_n)
             self.correlation_selected_layer = cfg.correlation_selected_layer
 
             # evaluation for frame-level tracking
@@ -154,7 +154,7 @@ class STMask(nn.Module):
         model_dict.update(state_dict)
         self.load_state_dict(model_dict)
 
-    def init_weights_coco(self, backbone_path):
+    def init_weights(self, backbone_path):
         """ Initialize weights for training. """
         state_dict = torch.load(backbone_path)
         model_dict = self.state_dict()

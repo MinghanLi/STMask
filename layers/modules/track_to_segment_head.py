@@ -7,7 +7,7 @@ from mmcv.ops import roi_align
 
 
 class TemporalNet(nn.Module):
-    def __init__(self, corr_channels):
+    def __init__(self, corr_channels, mask_proto_n=32):
 
         super().__init__()
         self.conv1 = nn.Conv2d(corr_channels, 512, kernel_size=3, padding=1)
@@ -17,9 +17,9 @@ class TemporalNet(nn.Module):
         self.pool = nn.AvgPool2d((7, 7), stride=1)
         self.fc = nn.Linear(1024, 4)
         if cfg.use_sipmask:
-            self.fc_coeff = nn.Linear(1024, 8 * cfg.sipmask_head)
+            self.fc_coeff = nn.Linear(1024, mask_proto_n * cfg.sipmask_head)
         else:
-            self.fc_coeff = nn.Linear(1024, 8)
+            self.fc_coeff = nn.Linear(1024, mask_proto_n)
 
     def forward(self, x):
         x = self.conv1(x)

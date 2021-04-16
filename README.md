@@ -5,6 +5,9 @@ The code is implmented for our paper in CVPR2021:
 
 ![image](https://github.com/MinghanLi/STMask/blob/main/images/overall1.png)
 
+# News
+- [14/04/2021] Release code on Github and paper on arxiv
+
 # Installation
  - Clone this repository and enter it:
    ```Shell
@@ -50,39 +53,62 @@ The code is implmented for our paper in CVPR2021:
 
 
 # Evaluation
-Here are our STMask models (released on April, 2021) along with their FPS on a 2080Ti and mAP on `validset`:
-
-| Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | Weights |                                                                                                         
-|:----------:      |:-------------:|:----:|:----:    |----|------|------|-----------------------------------------------------------------------------------------------------------|
-| [384,640]        | Resnet50-FPN  | FCA  | -        | TF | 29.3 | 31.6 | [STMask_r50_FCA+TF.pth](https://drive.google.com/file/d/1TCiW-EQLEh1SrN-o7cOvKEFQy2WhkeSL/view?usp=sharing) |
-| [384,640]        | Resnet50-FPN  | FCA  | FCB(ali) | TF | -    | -    | [STMask_r50_ali.pth]() | 
-| [384,640]        | Resnet50-FPN  | FCA  | FCB(ada) | TF | 28.6 | 33.5 | [STMask_r50_ada.pth]()  |
-| [384,640]        | Resnet101-FPN | FCA  | -        | TF | 24.5 | 36.0 | [STMask_r101_FCA+TF.pth](https://drive.google.com/file/d/1qgq8yC8otUMJMsffsaC288YOAwYf3OIz/view?usp=sharing) |    
-| [384,640]        | Resnet101-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 | [STMask_r101_ali.pth]()  |   
-| [384,640]        | Resnet101-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | [STMask_r101_ada.pth]()  |   
-
-To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_r101_FCA+TF.pth`).
 ## Quantitative Results on YTVOS2019
+Here are our STMask models (released on April, 2021) along with their FPS on a 2080Ti and mAP on `validset`, where mAP and mAP* are obtained under cross class fast nms and fast nms respectively:
+
+| Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | mAP* | Weights |                                                                                                         
+|:----------:      |:-------------:|:----:|:----:    |----|------|------|------|-----------------------------------------------------------------------------------------------------------|
+| [384, 640]        | R50-DCN-FPN  | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |
+| [384, 640]        | R50-DCN-FPN  | FCA  | FCB(ali) | TF | 27.8 | -    |      | [STMask_plus_resnet50_ali.pth]() | 
+| [384, 640]        | R50-DCN-FPN  | FCA  | FCB(ada) | TF | 28.6 | 32.9 |      | [STMask_plus_resnet50_ada.pth]() |
+| [384, 640]        | R101-DCN-FPN | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |    
+| [384, 640]        | R101-DCN-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 |      | [STMask_plus_base_ali.pth]()  |   
+| [384, 640]        | R101-DCN-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth]()  |   
+
+To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_plus_base.pth`). 
+Here all STMask models are trained based on `yolact_plus_base_54_80000.pth` or `yolact_plus_resnet_54_80000.pth` from Yolact++ [here](https://github.com/dbolya/yolact).
+
+## Quantitative Results on COCO
 ```Shell
 # Output a YTVOSEval json to submit to the website.
 # This command will create './weights/results.json' for instance segmentation.
 python eval.py --trained_model=weights/STMask_r101_FCA+TF.pth --mask_det_file=weights/results.json
 ```
+We also provide those trained quantitative results of Yolcat++ with our proposed feature calibration for anchors and boxes on COCO.
+
+| Image Size        | Backbone      | FCA  | FCB     | B_AP | M_AP | Weights |                                                                                                         
+|:----------:       |:-------------:|:----:|:----:   |------|------|---------------------------------------------------------------------------------------------------------------|
+| [550, 550]        | R50-DCN-FPN  | FCA  | -        | 34.5 | 32.9 |[yolact_plus_resnet50_54.pth](https://drive.google.com/file/d/18bGj_pgKGojtnn8ni5XPbAUBNWGHkQbN/view?usp=sharing) |
+| [550, 550]        | R50-DCN-FPN  | FCA  | FCB(ali) |      |      |[yolact_plus_resnet50_ali_54.pth]() | 
+| [550, 550]        | R50-DCN-FPN  | FCA  | FCB(ada) | 34.7 | 33.2 |[yolact_plus_resnet50_ada_54.pth](https://drive.google.com/file/d/12nEvCra-nU2nPQn0RN5OT_NXF-in1VzL/view?usp=sharing)  |
+| [550, 550]        | R101-DCN-FPN | FCA  | -        | 35.7 | 33.3 |[yolact_plus_base.pth](https://drive.google.com/file/d/1TwtfP89h4-UJawsOetvSkVJmwZbjWHkk/view?usp=sharing) |    
+| [550, 550]        | R101-DCN-FPN | FCA  | FCB(ali) |      |      |[yolact_plus_base_ali_54.pth]()  |   
+| [550, 550]        | R101-DCN-FPN | FCA  | FCB(ada) | 36.4 | 34.8 |[yolact_plus_baseada_54.pth](https://drive.google.com/file/d/1xpIeTe2kUMcyw0Ud0nbHZJlXHhBywrfM/view?usp=sharing)  |   
+
+
+# inference
+```Shell
+# Output a YTVOSEval json to submit to the website.
+# This command will create './weights/results.json' for instance segmentation.
+python eval.py --config=STMask_plus_base_ada_config --trained_model=weights/STMask_plus_base_ada.pth --mask_det_file=weights/results.json
+```
 
 # Training
 By default, we train on YouTubeVOS2019 dataset. Make sure to download the entire dataset using the commands above.
  - To train, grab an COCO-pretrained model and put it in `./weights`.
-   - For Resnet50, download `yolact_plus_resnet50_54.pth` from [here](https://drive.google.com/file/d/18bGj_pgKGojtnn8ni5XPbAUBNWGHkQbN/view?usp=sharing).
-   - For Resnet101, download `yolact_plus_base_54_80000.pth` from [here](https://github.com/dbolya/yolact).
+   - [Yolcat++]: For Resnet-50/-101, download `yolact_plus_base_54_80000.pth` or `yolact_plus_resnet_54_80000.pth` from Yolact++ [here](https://github.com/dbolya/yolact).
+   - [Yolcat++ & FC]: Alternatively, you can use those Yolact++ with FC models on Table. 2 for training, which can obtain a relative higher performance than that of Yolact++ models.
+
+
 - Run one of the training commands below.
    - Note that you can press ctrl+c while training and it will save an `*_interrupt.pth` file at the current iteration.
    - All weights are saved in the `./weights` directory by default with the file name `<config>_<epoch>_<iter>.pth`.
 ```Shell
-# Trains yolact_base_config with a batch_size of 8.
-CUDA_VISIBLE_DEVICES=0,1 python train.py --config=STMask_plus_base_config --batch_size=8 --save_folder=weights/weights_r101
+# Trains STMask_plus_base_config with a batch_size of 8.
+CUDA_VISIBLE_DEVICES=0,1 python train.py --config=STMask_plus_base_config --batch_size=8 --lr=1e-4 --save_folder=weights/weights_r101
 
 
-# Resume training STMask_base with a specific weight file and start from the iteration specified in the weight file's name.
+# Resume training STMask_plus_base with a specific weight file and start from the iteration specified in the weight file's name.
 CUDA_VISIBLE_DEVICES=0,1 python train.py --config=STMask_plus_base_config --resume=weights/STMask_plus_base_10_32100.pth 
 ```
 

@@ -71,42 +71,35 @@ def results2json_videoseg(dataset, results, out_file, sampler_img_ids=None):
 
         det = results[idx]
         for obj_id in det:
-            if det[obj_id]['segm']['counts'] != b'PPTl0':
-                bbox = det[obj_id]['bbox']
-                score = det[obj_id]['score']
-                segm = det[obj_id]['segm']
-                label = det[obj_id]['label']
-                # label_all = det[obj_id]['label_all']
-                if obj_id not in vid_objs:
-                    vid_objs[obj_id] = {'scores': [], 'cats': [], 'segms': {}}
-                vid_objs[obj_id]['scores'].append(score)
-                vid_objs[obj_id]['cats'].append(label)
-                segm['counts'] = segm['counts'].decode()
-                vid_objs[obj_id]['segms'][frame_id] = segm
+            bbox = det[obj_id]['bbox']
+            score = det[obj_id]['score']
+            segm = det[obj_id]['segm']
+            label = det[obj_id]['label']
+            # label_all = det[obj_id]['label_all']
+            if obj_id not in vid_objs:
+                vid_objs[obj_id] = {'scores': [], 'cats': [], 'segms': {}}
+            vid_objs[obj_id]['scores'].append(score)
+            vid_objs[obj_id]['cats'].append(label)
+            segm['counts'] = segm['counts'].decode()
+            vid_objs[obj_id]['segms'][frame_id] = segm
         if is_last:
             # store results of  the current video
             for obj_id, obj in vid_objs.items():
+                data = dict()
+
+                data['video_id'] = vid_id
+                data['score'] = np.array(obj['scores']).mean().item()
                 # majority voting for sequence category
-                all_cats = np.bincount(np.array(obj['cats']))
-                data_score = np.array(obj['scores']).mean().item()
+                # data['category_id'] = np.stack(obj['cats'], axis=0).sum(0).argmax().item()+1
+                data['category_id'] = np.bincount(np.array(obj['cats'])).argmax().item()
                 vid_seg = []
                 for fid in range(frame_id + 1):
                     if fid in obj['segms']:
                         vid_seg.append(obj['segms'][fid])
                     else:
                         vid_seg.append(None)
-
-                for cat_id in range(len(all_cats)):
-                    if all_cats[cat_id] > 0.1 * len(obj['cats']) or cat_id == all_cats.argmax().item():
-                        data = dict()
-
-                        data['video_id'] = vid_id
-                        data['score'] = data_score
-                        # majority voting for sequence category
-                        data['category_id'] = cat_id
-
-                        data['segmentations'] = vid_seg
-                        json_results.append(data)
+                data['segmentations'] = vid_seg
+                json_results.append(data)
 
             vid_objs = {}
     if not os.path.exists(out_file[:-13]):

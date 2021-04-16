@@ -23,7 +23,7 @@ class Detect_TF(object):
             raise ValueError('nms_threshold must be non negative.')
         self.conf_thresh = conf_thresh
 
-        self.use_cross_class_nms = True
+        self.use_cross_class_nms = False
         self.use_fast_nms = True
 
     def __call__(self, net, candidate, is_output_candidate=False):
@@ -64,9 +64,13 @@ class Detect_TF(object):
             else:
                 return {'box': boxes, 'mask_coeff': mask_coeff, 'class': torch.Tensor(), 'score': torch.Tensor()}
 
-        idx_out, out_aft_nms = self.cc_fast_nms(boxes, mask_coeff, proto_data,
-                                                track, scores, centerness_scores,
-                                                self.nms_thresh, self.top_k)
+        if self.use_fast_nms:
+            if self.use_cross_class_nms:
+                idx_out, out_aft_nms = self.cc_fast_nms(boxes, mask_coeff, proto_data, track, scores, centerness_scores,
+                                                        self.nms_thresh, self.top_k)
+            else:
+                idx_out, out_aft_nms = self.fast_nms(boxes, mask_coeff, proto_data, track, scores, centerness_scores,
+                                                     self.nms_thresh, self.top_k)
 
         if is_output_candidate:
             candidate['conf'] = candidate['conf'][idx_out]
@@ -88,13 +92,6 @@ class Detect_TF(object):
         if centerness_scores is not None:
             scores = scores * centerness_scores
 
-        if cfg.nms_as_miou:
-            det_masks = proto_data @ cfg.mask_proto_coeff_activation(masks_coeff.t())
-            det_masks = cfg.mask_proto_mask_activation(det_masks)
-            _, det_masks = crop(det_masks, boxes)
-            det_masks = det_masks.permute(2, 0, 1).contiguous()  # [n_masks, h, w]
-            det_masks = det_masks.gt(0.5).float()
-
         _, idx = scores.sort(0, descending=True)
         idx = idx[:top_k]
         idx_out = None
@@ -105,6 +102,11 @@ class Detect_TF(object):
 
         else:
             if cfg.nms_as_miou:
+                det_masks = proto_data @ cfg.mask_proto_coeff_activation(masks_coeff.t())
+                det_masks = cfg.mask_proto_mask_activation(det_masks)
+                _, det_masks = crop(det_masks, boxes)
+                det_masks = det_masks.permute(2, 0, 1).contiguous()  # [n_masks, h, w]
+                det_masks = det_masks.gt(0.5).float()
                 iou = mask_iou(det_masks[idx], det_masks[idx])
             else:
                 # Compute the pairwise IoU between the boxes
@@ -135,5 +137,77 @@ class Detect_TF(object):
 
             out_after_NMS = {'box': boxes, 'mask_coeff': masks_coeff, 'track': track, 'class': classes,
                              'score': scores, 'centerness': centerness_scores, 'proto': proto_data}
+        return idx_out, out_after_NMS
+
+    def fast_nms(self, boxes, masks_coeff, proto_data, track, conf, centerness_scores,
+                 iou_threshold: float = 0.5, top_k: int = 200,
+                 second_threshold: bool = True):
+
+        if centerness_scores is not None:
+            centerness_scores = centerness_scores.view(-1, 1)
+            conf = conf * centerness_scores.t()
+
+        scores, idx = conf.sort(1, descending=True)  # [num_classes, num_dets]
+        idx = idx[:, :top_k].contiguous()
+        scores = scores[:, :top_k]
+
+        if len(idx) == 0:
+            out_after_NMS = {'box': torch.Tensor(), 'mask_coeff': torch.Tensor(), 'class': torch.Tensor(),
+                             'score': torch.Tensor()}
+
+        else:
+            num_classes, num_dets = idx.size()
+            boxes = boxes[idx.view(-1), :].view(num_classes, num_dets, 4)
+            masks_coeff = masks_coeff[idx.view(-1), :].view(num_classes, num_dets, -1)
+            if cfg.train_track:
+                track = track[idx.view(-1), :].view(num_classes, num_dets, -1)
+            if centerness_scores is not None:
+                centerness_scores = centerness_scores[idx.view(-1), :].view(num_classes, num_dets, -1)
+
+            iou = jaccard(boxes, boxes)  # [num_classes, num_dets, num_dets]
+            iou.triu_(diagonal=1)
+            iou_max, _ = iou.max(dim=1)  # [num_classes, num_dets]
+
+            # Now just filter out the ones higher than the threshold
+            keep = (iou_max <= iou_threshold)  # [num_classes, num_dets]
+
+            # We should also only keep detections over the confidence threshold, but at the cost of
+            # maxing out your detection count for every image, you can just not do that. Because we
+            # have such a minimal amount of computation per detection (matrix mulitplication only),
+            # this increase doesn't affect us much (+0.2 mAP for 34 -> 33 fps), so we leave it out.
+            # However, when you implement this in your method, you should do this second threshold.
+            if second_threshold:
+                keep *= (scores > self.conf_thresh)
+
+            # Assign each kept detection to its corresponding class
+            classes = torch.arange(num_classes, device=boxes.device)[:, None].expand_as(keep)
+            classes = classes[keep]
+
+            boxes = boxes[keep]
+            masks_coeff = masks_coeff[keep]
+            if cfg.train_track:
+                track = track[keep]
+            if centerness_scores is not None:
+                centerness_scores = centerness_scores[keep]
+            scores = scores[keep]
+            idx_out = idx[keep]
+
+            # Only keep the top cfg.max_num_detections highest scores across all classes
+            scores, idx = scores.sort(0, descending=True)
+            idx = idx[:cfg.max_num_detections]
+            scores = scores[:cfg.max_num_detections]
+
+            classes = classes[idx]
+            boxes = boxes[idx]
+            masks_coeff = masks_coeff[idx]
+            if cfg.train_track:
+                track = track[idx]
+            if centerness_scores is not None:
+                centerness_scores = centerness_scores[idx]
+            idx_out = idx_out[idx]
+
+            out_after_NMS = {'box': boxes, 'mask_coeff': masks_coeff, 'track': track, 'class': classes,
+                             'score': scores, 'centerness': centerness_scores, 'proto': proto_data}
+
         return idx_out, out_after_NMS
 

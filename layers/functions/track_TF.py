@@ -166,7 +166,7 @@ class Track_TF(object):
                                           cfg.use_sipmask)
 
             # whether add some tracked masks
-            cond1 = self.prev_candidate['tracked_mask'] <= 7
+            cond1 = self.prev_candidate['tracked_mask'] <= 5
             # whether tracked masks are greater than a small threshold, which removes some false positives
             cond2 = det_masks_out.gt_(0.5).sum([1, 2]) > 2
             # a declining weights (0.8) to remove some false positives that cased by consecutively track to segment

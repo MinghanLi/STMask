@@ -71,19 +71,12 @@ class CandidateShift(object):
 
 
 def generate_candidate(predictions):
-    # only support batch_size=1
     batch_Size = predictions['loc'].size(0)
     candidate = []
     prior_data = predictions['priors'].squeeze(0)
     for i in range(batch_Size):
-        if cfg.train_boxes:
-            loc_data = predictions['loc'][i]
-        if cfg.train_centerness:
-            centerness_data = predictions['centerness'][i]
-
+        loc_data = predictions['loc'][i]
         conf_data = predictions['conf'][i]
-        mask_data = predictions['mask_coeff'][i]
-        track_data = predictions['track'][i] if cfg.train_track else None
 
         candidate_cur = {'T2S_feat': predictions['T2S_feat'][i].unsqueeze(0),
                          'fpn_feat': predictions['fpn_feat'][i].unsqueeze(0)}
@@ -92,24 +85,16 @@ def generate_candidate(predictions):
             decoded_boxes = decode(loc_data, prior_data)
 
             conf_data = conf_data.t().contiguous()
-            cur_scores = conf_data[1:, :]
-            conf_scores, _ = torch.max(cur_scores, dim=0)
+            conf_scores, _ = torch.max(conf_data[1:, :], dim=0)
 
             keep = (conf_scores > cfg.eval_conf_thresh)
-            conf = conf_data[:, keep].t()
-            boxes = decoded_boxes[keep, :]
-            mask_coeff = mask_data[keep, :]
-            track = track_data[keep, :] if cfg.train_track else None
-
-            if cfg.train_centerness:
-                centerness_scores = centerness_data[keep].view(-1)
-                candidate_cur['centerness'] = centerness_scores
-
             candidate_cur['proto'] = predictions['proto'][i]
-            candidate_cur['conf'] = conf
-            candidate_cur['box'] = boxes
-            candidate_cur['mask_coeff'] = mask_coeff
-            candidate_cur['track'] = track
+            candidate_cur['conf'] = conf_data[:, keep].t()
+            candidate_cur['box'] = decoded_boxes[keep, :]
+            candidate_cur['mask_coeff'] = predictions['mask_coeff'][i][keep, :]
+            candidate_cur['track'] = predictions['track'][i][keep, :] if cfg.train_track else None
+            if cfg.train_centerness:
+                candidate_cur['centerness'] = predictions['centerness'][i][keep].view(-1)
 
         candidate.append(candidate_cur)
 
@@ -128,44 +113,6 @@ def merge_candidates(candidate, ref_candidate_clip_shift):
                     merged_candidate[k] = torch.cat([v.clone(), ref_candidate[k].clone()], dim=0)
 
     return merged_candidate
-
-
-def cc_fast_nms(boxes, conf, DIoU_scores, proto_data, mask_coeff, iou_threshold: float = 0.3, top_k: int = 200):
-    # Collapse all the classes into 1
-    if boxes.size(0) > 0:
-        scores, classes = conf[:, 1:].max(dim=1)
-        if DIoU_scores is not None:
-            scores = scores * DIoU_scores
-
-        sorted_scores, idx = scores.sort(0, descending=True)
-        idx = idx[:top_k]
-
-        det_masks = proto_data @ mask_coeff.t()
-        det_masks = cfg.mask_proto_mask_activation(det_masks)
-        _, det_masks = crop(det_masks, boxes)
-        det_masks = det_masks.permute(2, 0, 1).contiguous()  # [n_masks, h, w]
-        det_masks = det_masks.gt(0.5).float()
-
-        if cfg.nms_as_miou:
-            iou = mask_iou(det_masks[idx], det_masks[idx])
-        else:
-            # Compute the pairwise IoU between the boxes
-            boxes_idx = boxes[idx]
-            iou = jaccard(boxes_idx, boxes_idx)
-
-        # Zero out the lower triangle of the cosine similarity matrix and diagonal
-        iou = torch.triu(iou, diagonal=1)
-
-        # Now that everything in the diagonal and below is zeroed out, if we take the max
-        # of the IoU matrix along the columns, each column will represent the maximum IoU
-        # between this element and every element with a higher score than this element.
-        iou_max, _ = torch.max(iou, dim=0)
-
-        # Now just filter out the ones greater than the threshold, i.e., only keep boxes that
-        # don't have a higher scoring box that would supress it in normal NMS.
-        idx_out = idx[iou_max <= iou_threshold]
-
-    return idx_out
 
 
 def compute_comp_scores(match_ll, bbox_scores, bbox_ious, mask_ious, label_delta, add_bbox_dummy=False, bbox_dummy_iou=0,

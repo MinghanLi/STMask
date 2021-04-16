@@ -25,7 +25,7 @@ def str2bool(v):
 
 parser = argparse.ArgumentParser(
     description='Yolact Training Script')
-parser.add_argument('--batch_size', default=6, type=int,
+parser.add_argument('--batch_size', default=8, type=int,
                     help='Batch size for training')
 parser.add_argument('--eval_batch_size', default=1, type=int,
                     help='Batch size for training')
@@ -41,7 +41,7 @@ parser.add_argument('--cuda', default=True, type=str2bool,
                     help='Use CUDA to train model')
 parser.add_argument('--backbone.pred_scales_num', default=3, type=int,
                     help='Number of pred scales in backbone for getting anchors')
-parser.add_argument('--lr', '--learning_rate', default=0.001, type=float,
+parser.add_argument('--lr', '--learning_rate', default=0.0001, type=float,
                     help='Initial learning rate. Leave as None to read this from the config.')
 parser.add_argument('--momentum', default=0.9, type=float,
                     help='Momentum for SGD. Leave as None to read this from the config.')
@@ -53,10 +53,8 @@ parser.add_argument('--save_folder', default='weights/weights_temp/',
                     help='Directory for saving checkpoint models')
 parser.add_argument('--config', default='STMask_plus_base_config',
                     help='The config object to use.')
-parser.add_argument('--save_interval', default=5000, type=int,
+parser.add_argument('--save_interval', default=10000, type=int,
                     help='The number of iterations between saving the model.')
-parser.add_argument('--validation_size', default=0.01, type=float,
-                    help='The ratio of images to use for validation.')
 parser.add_argument('--validation_epoch', default=1, type=int,
                     help='Output validation information every n iterations. If -1, do no validation.')
 parser.add_argument('--output_json', dest='output_json', action='store_true',
@@ -352,7 +350,7 @@ def train():
 
                     log.log_gpu_stats = args.log_gpu
 
-                if iteration % args.save_interval == 0 and iteration != args.start_iter:
+                if iteration % args.save_interval == 0 and epoch >= 7:
                     if args.keep_latest:
                         latest = SavePath.get_latest(args.save_folder, cfg.name)
 
@@ -366,7 +364,7 @@ def train():
 
                 # This is done per epoch
                 if args.validation_epoch > 0:
-                    if iteration % args.save_interval == 0 and iteration != args.start_iter:
+                    if iteration % args.save_interval == 0 and epoch >= 7:
                         setup_eval()
                         save_path_valid_metrics = save_path(epoch, iteration).replace('.pth', '.txt')
                         # valid datasets

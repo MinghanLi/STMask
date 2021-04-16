@@ -115,7 +115,7 @@ dataset_base = Config({
 
 train_YouTube_VOS_dataset = dataset_base.copy({
     'img_prefix': '../datasets/YouTube_VOS2019/train/JPEGImages',
-    'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/valid_sub.json',
+    'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/train.json',
     # 'extra_aug': dict(random_crop=dict(min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
     # 'extra_aug': dict(expand=dict(mean=(123.675, 116.28, 103.53), to_rgb=True, ratio_range=(1, 3))),
 })
@@ -589,8 +589,8 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     'mask_alpha': 6.125,
     'mask_proto_src': 0,
     'mask_proto_crop': True,
-    'mask_proto_net': [(256, 3, {'padding': 1})] * 3 + [(None, -2, {}), (256, 3, {'padding': 1})] + [(8, 1, {})],
-    'use_rela_coord': False,
+    'mask_proto_n': 32,
+    'mask_proto_net': [(256, 3, {'padding': 1})] * 3 + [(None, -2, {}), (256, 3, {'padding': 1})] + [(32, 1, {})],
     'mask_proto_normalize_emulate_roi_pooling': False,
     'discard_mask_area': 5 * 5,
     'mask_proto_coeff_diversity_loss': False,
@@ -620,6 +620,7 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     'maskshift_loss': True,
 
     # FCB settings
+    # FCB_ada set 'use_pred_offset' as True, FCB_ali set 'use_pred_offset' as False
     'use_pred_offset': False,
     'use_dcn_class': False,
     'use_dcn_track': False,
@@ -658,6 +659,7 @@ STMask_base_config = YouTube_VOS_base_config.copy({
 
 
 # ----------------------- STMask-plus CONFIGS ----------------------- #
+# only turn on feature calibration for anchors (FCA) and temporal fusion module (TF)
 STMask_plus_base_config = STMask_base_config.copy({
     'name': 'STMask_plus_base',
     'backbone': resnet101_dcn_inter3_backbone.copy({
@@ -665,6 +667,28 @@ STMask_plus_base_config = STMask_base_config.copy({
         'pred_scales': STMask_base_config.backbone.pred_scales,
         'pred_aspect_ratios': STMask_base_config.backbone.pred_aspect_ratios,
     }),
+
+})
+
+STMask_plus_base_ada_config = STMask_plus_base_config.copy({
+    'name': 'STMask_plus_base_ada',
+
+    # FCB settings
+    'use_pred_offset': True,
+    'use_dcn_class': True,
+    'use_dcn_track': False,
+    'use_dcn_mask': False,
+
+})
+
+STMask_plus_base_ali_config = STMask_plus_base_config.copy({
+    'name': 'STMask_plus_base_ali',
+
+    # FCB settings
+    'use_pred_offset': False,
+    'use_dcn_class': True,
+    'use_dcn_track': False,
+    'use_dcn_mask': False,
 
 })
 
@@ -686,6 +710,34 @@ STMask_plus_resnet50_config = STMask_resnet50_config.copy({
         'pred_scales': STMask_base_config.backbone.pred_scales,
         'pred_aspect_ratios': STMask_base_config.backbone.pred_aspect_ratios,
     }),
+
+})
+
+STMask_plus_resnet50_ada_config = STMask_plus_resnet50_config.copy({
+    'name': 'STMask_plus_resnet50_ada',
+    'backbone': resnet50_dcn_inter3_backbone.copy({
+        'path': 'yolact_plus_resnet50_ada_54.pth',
+    }),
+
+    # FCB settings
+    'use_pred_offset': True,
+    'use_dcn_class': True,
+    'use_dcn_track': False,
+    'use_dcn_mask': False,
+
+})
+
+STMask_plus_resnet50_ali_config = STMask_plus_resnet50_config.copy({
+    'name': 'STMask_plus_resnet50_ali',
+    'backbone': resnet50_dcn_inter3_backbone.copy({
+        'path': 'yolact_plus_resnet50_ada_54.pth',
+    }),
+
+    # FCB settings
+    'use_pred_offset': False,
+    'use_dcn_class': True,
+    'use_dcn_track': False,
+    'use_dcn_mask': False,
 
 })
 
