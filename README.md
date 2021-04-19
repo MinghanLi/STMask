@@ -68,11 +68,11 @@ Here are our STMask models (released on April, 2021) along with their FPS on a 2
 | Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | mAP* | Weights |                                                                                                         
 |:----------:      |:-------------:|:----:|:----:    |----|------|------|------|-----------------------------------------------------------------------------------------------------------|
 | [384,640]        | R50-DCN-FPN  | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |
-| [384,640]        | R50-DCN-FPN  | FCA  | FCB(ali) | TF | 27.8 | -    |      | [STMask_plus_resnet50_ali.pth]() | 
-| [384,640]        | R50-DCN-FPN  | FCA  | FCB(ada) | TF | 28.6 | 32.9 |      | [STMask_plus_resnet50_ada.pth]() |
+| [384,640]        | R50-DCN-FPN  | FCA  | FCB(ali) | TF | 27.8 | -    | 32.1 | [STMask_plus_resnet50_ali.pth](https://drive.google.com/file/d/1J9L2oDNqm40wwzKn1iIwvXnPIr5n1kQP/view?usp=sharing) | 
+| [384,640]        | R50-DCN-FPN  | FCA  | FCB(ada) | TF | 28.6 | 32.8 | 33.0 | [STMask_plus_resnet50_ada.pth](https://drive.google.com/file/d/1HbtRX3sH_3CZTAjuIIMv8hIdTuqItfwq/view?usp=sharing) |
 | [384,640]        | R101-DCN-FPN | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |    
-| [384,640]        | R101-DCN-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 |      | [STMask_plus_base_ali.pth]()  |   
-| [384,640]        | R101-DCN-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth]()  |   
+| [384,640]        | R101-DCN-FPN | FCA  | FCB(ali) | TF | 22.1 | 36.3 | 37.1 | [STMask_plus_base_ali.pth](https://drive.google.com/file/d/1Cza-I9xAqkzXKlaTJrSIzlP4pcC0og4f/view?usp=sharing)  |   
+| [384,640]        | R101-DCN-FPN | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth](https://drive.google.com/file/d/1ZjQWiURoHZnyafWaPzgvYSEibk77rGDa/view?usp=sharing)  |   
 
 To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_plus_base.pth`). 
 Here all STMask models are trained based on `yolact_plus_base_54_80000.pth` or `yolact_plus_resnet_54_80000.pth` from Yolact++ [here](https://github.com/dbolya/yolact).
@@ -84,10 +84,10 @@ We also provide quantitative results of Yolcat++ with our proposed feature calib
 | Image Size        | Backbone      | FCA  | FCB     | B_AP | M_AP | Weights |                                                                                                         
 |:----------:       |:-------------:|:----:|:----:   |------|------|---------------------------------------------------------------------------------------------------------------|
 | [550,550]        | R50-DCN-FPN  | FCA  | -        | 34.5 | 32.9 |[yolact_plus_resnet50_54.pth](https://drive.google.com/file/d/18bGj_pgKGojtnn8ni5XPbAUBNWGHkQbN/view?usp=sharing) |
-| [550,550]        | R50-DCN-FPN  | FCA  | FCB(ali) |      |      |[yolact_plus_resnet50_ali_54.pth]() | 
+| [550,550]        | R50-DCN-FPN  | FCA  | FCB(ali) | 34.6 | 33.3 |[yolact_plus_resnet50_ali_54.pth](https://drive.google.com/file/d/1iHefY01fhLE3OqMeb20guGD4U3HsxHmR/view?usp=sharing) | 
 | [550,550]        | R50-DCN-FPN  | FCA  | FCB(ada) | 34.7 | 33.2 |[yolact_plus_resnet50_ada_54.pth](https://drive.google.com/file/d/12nEvCra-nU2nPQn0RN5OT_NXF-in1VzL/view?usp=sharing)  |
-| [550,550]        | R101-DCN-FPN | FCA  | -        | 35.7 | 33.3 |[yolact_plus_base.pth](https://drive.google.com/file/d/1TwtfP89h4-UJawsOetvSkVJmwZbjWHkk/view?usp=sharing) |    
-| [550,550]        | R101-DCN-FPN | FCA  | FCB(ali) |      |      |[yolact_plus_base_ali_54.pth]()  |   
+| [550,550]        | R101-DCN-FPN | FCA  | -        | 35.7 | 33.3 |[yolact_plus_base_54.pth](https://drive.google.com/file/d/1TwtfP89h4-UJawsOetvSkVJmwZbjWHkk/view?usp=sharing) |    
+| [550,550]        | R101-DCN-FPN | FCA  | FCB(ali) | 35.6 | 34.1 |[yolact_plus_base_ali_54.pth](https://drive.google.com/file/d/1wvCSvRyMDKfxf1an9xTzquUQpX_azalR/view?usp=sharing)  |   
 | [550,550]        | R101-DCN-FPN | FCA  | FCB(ada) | 36.4 | 34.8 |[yolact_plus_baseada_54.pth](https://drive.google.com/file/d/1xpIeTe2kUMcyw0Ud0nbHZJlXHhBywrfM/view?usp=sharing)  |   
 
 

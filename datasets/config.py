@@ -229,7 +229,7 @@ resnet50_backbone = resnet101_backbone.copy({
 
 resnet50_dcn_inter3_backbone = resnet50_backbone.copy({
     'name': 'ResNet50_DCN_Interval3',
-    'path': 'yolact_plus_resnet50_54.pth',
+    'path': 'yolact_plus_resnet50_54_800000.pth',
     'args': ([3, 4, 6, 3], [0, 4, 6, 3], 3),
 })
 
@@ -548,8 +548,8 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     'valid_dataset': valid_YouTube_VOS_dataset,
 
     # Training params
-    'lr_steps': (150000, 200000, 250000),
-    'max_iter': 300000,
+    'lr_steps': (150000, 200000),
+    'max_iter': 250000,
 
     # loss
     'conf_alpha': 6.125,
