@@ -6,7 +6,7 @@ The code is implmented for our paper in CVPR2021:
 ![image](https://github.com/MinghanLi/STMask/blob/main/images/overall1.png)
 
 # News
-- [22/04/2021] Add experimental results on [YTVIS2021](https://youtube-vos.org/dataset/vis/)) and [OVIS](http://songbai.site/ovis/) datasets
+- [22/04/2021] Add experimental results on [YTVIS2021](https://youtube-vos.org/dataset/vis/) and [OVIS](http://songbai.site/ovis/) datasets
 - [14/04/2021] Release code on Github and paper on arxiv
 
 # Installation
