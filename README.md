@@ -118,6 +118,11 @@ We also provide quantitative results of Yolcat++ with our proposed feature calib
 python eval.py --config=STMask_plus_base_ada_config --trained_model=weights/STMask_plus_base_ada.pth --mask_det_file=weights/results.json
 ```
 
+```Shell
+# Output a visual segmentation results
+python eval.py --config=STMask_plus_base_ada_config --trained_model=weights/STMask_plus_base_ada.pth --mask_det_file=weights/results.json --display
+```
+
 # Training
 By default, we train on YouTubeVOS2019 dataset. Make sure to download the entire dataset using the commands above.
  - To train, grab an COCO-pretrained model and put it in `./weights`.
