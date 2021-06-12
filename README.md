@@ -6,6 +6,7 @@ The code is implmented for our paper in CVPR2021:
 ![image](https://github.com/MinghanLi/STMask/blob/main/images/overall1.png)
 
 # News
+- [12/06/2021] Update the solution for the error in deform_conv_cuda.cu 
 - [22/04/2021] Add experimental results on [YTVIS2021](https://youtube-vos.org/dataset/vis/) and [OVIS](http://songbai.site/ovis/) datasets
 - [14/04/2021] Release code on Github and paper on arxiv
 
@@ -57,6 +58,33 @@ The code is implmented for our paper in CVPR2021:
      cd DCNv2
      python setup.py build develop
      ```
+
+- Modify mmcv/ops/deform_conv.py to handle deformable convolution with different height and width (like 3 * 5) in FCB(ali) or FCB(ada)
+  - Open the file deform_conv.py 
+    ```Shell
+    vim /your_conda_env_path/mmcv/ops/deform_conv.py
+    ```
+  - Replace padW=ctx.padding[1], padH=ctx.padding[0] with padW=ctx.padding[0], padH=ctx.padding[1], taking Line 81-89 as an example:
+    ```Shell
+    ext_module.deform_conv_forward(
+            input,
+            weight,
+            offset,
+            output,
+            ctx.bufs_[0],
+            ctx.bufs_[1],
+            kW=weight.size(3),
+            kH=weight.size(2),
+            dW=ctx.stride[1],
+            dH=ctx.stride[0],
+            padW=ctx.padding[0],
+            padH=ctx.padding[1],
+            dilationW=ctx.dilation[1],
+            dilationH=ctx.dilation[0],
+            group=ctx.groups,
+            deformable_group=ctx.deform_groups,
+            im2col_step=cur_im2col_step)
+    ```
 
 # Dataset
  - If you'd like to train STMask, please download the datasets from the official web: [YTVIS2019](https://youtube-vos.org/dataset/), [YTVIS2021](https://youtube-vos.org/dataset/vis/) and [OVIS](http://songbai.site/ovis/).
