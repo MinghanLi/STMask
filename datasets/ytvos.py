@@ -44,9 +44,9 @@ class YTVOSDataset(CustomDataset):
         # load annotations (and proposals)
         self.vid_infos = self.load_annotations(ann_file)
         img_ids = []
-        for idx, vid_info in enumerate(self.vid_infos):
-          for frame_id in range(len(vid_info['filenames'])):
-            img_ids.append((idx, frame_id))
+        for vid_id, vid_info in zip(self.vid_ids, self.vid_infos):
+            for frame_id in range(len(vid_info['filenames'])):
+                img_ids.append((vid_id, frame_id))
         self.img_ids = img_ids
         if proposal_file is not None:
             self.proposals = self.load_proposals(proposal_file)
@@ -131,8 +131,7 @@ class YTVOSDataset(CustomDataset):
             vid_infos.append(info)
         return vid_infos
 
-    def get_ann_info(self, idx, frame_id):
-        vid_id = self.vid_infos[idx]['id']
+    def get_ann_info(self, vid_id, frame_id):
         ann_ids = self.ytvos.getAnnIds(vidIds=[vid_id])
         ann_info = self.ytvos.loadAnns(ann_ids)
         return self._parse_ann_info(ann_info, frame_id)
@@ -145,8 +144,9 @@ class YTVOSDataset(CustomDataset):
         """
         self.flag = np.zeros(len(self), dtype=np.uint8)
         for i in range(len(self)):
-            vid_id, _ = self.img_ids[i]
-            vid_info = self.vid_infos[vid_id]
+            vid, _ = self.img_ids[i]
+            vid_idx = self.vid_ids.index(vid)
+            vid_info = self.vid_infos[vid_idx]
             if vid_info['width'] / vid_info['height'] > 1:
                 self.flag[i] = 1
 
@@ -177,7 +177,8 @@ class YTVOSDataset(CustomDataset):
     def sample_ref(self, idx):
         # sample another frame in the same sequence as reference
         vid, frame_id = idx
-        vid_info = self.vid_infos[vid]
+        vid_idx = self.vid_ids.index(vid)
+        vid_info = self.vid_infos[vid_idx]
         sample_range = range(len(vid_info['filenames']))
         valid_samples = []
         for i in range(-2*self.clip_frames, 2*self.clip_frames+1):
@@ -194,7 +195,8 @@ class YTVOSDataset(CustomDataset):
     def prepare_train_img(self, idx):
         # prepare a pair of image in a sequence
         vid,  frame_id = idx
-        vid_info = self.vid_infos[vid]
+        vid_idx = self.vid_ids.index(vid)
+        vid_info = self.vid_infos[vid_idx]
         basename = osp.basename(vid_info['filenames'][frame_id])
         clip_frame_ids = self.sample_ref(idx) + [frame_id]
         clip_frame_ids.sort()
@@ -299,7 +301,8 @@ class YTVOSDataset(CustomDataset):
     def prepare_test_img(self, idx):
         """Prepare an image for testing (multi-scale and flipping)"""
         vid, frame_id = idx
-        vid_info = self.vid_infos[vid]
+        vid_idx = self.vid_ids.index(vid)
+        vid_info = self.vid_infos[vid_idx]
         img = mmcv.imread(osp.join(self.img_prefix, vid_info['filenames'][frame_id]))
         proposal = None
 
@@ -352,7 +355,8 @@ class YTVOSDataset(CustomDataset):
     def sample_ref_test(self, idx):
         # sample another frame in the same sequence as reference
         vid, frame_id = idx
-        vid_info = self.vid_infos[vid]
+        vid_idx = self.vid_ids.index(vid)
+        vid_info = self.vid_infos[vid_idx]
         sample_range = range(len(vid_info['filenames']))
         valid_samples = []
         if frame_id == 0:

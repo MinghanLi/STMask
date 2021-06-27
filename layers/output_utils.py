@@ -13,7 +13,7 @@ from utils import timer
 from .box_utils import crop, sanitize_coordinates, center_size
 
 
-def postprocess_ytbvis(det_output, pad_h, pad_w, img_meta, interpolation_mode='bilinear',
+def postprocess_ytbvis(det_output, img_meta, interpolation_mode='bilinear',
                        display_mask=False, visualize_lincomb=False, crop_masks=True, score_threshold=0,
                        img_ids=None, mask_det_file=None):
     """
@@ -42,6 +42,7 @@ def postprocess_ytbvis(det_output, pad_h, pad_w, img_meta, interpolation_mode='b
 
     ori_h, ori_w = img_meta['ori_shape'][:2]
     img_h, img_w = img_meta['img_shape'][:2]
+    pad_h, pad_w = img_meta['pad_shape'][:2]
     s_w, s_h = (img_w / pad_w, img_h / pad_h)
 
     if dets['box'].nelement() == 0:

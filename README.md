@@ -6,6 +6,7 @@ The code is implmented for our paper in CVPR2021:
 ![image](https://github.com/MinghanLi/STMask/blob/main/images/overall1.png)
 
 # News
+- [27/06/2021] **!Important issue:** For previous results of YTVIS2021 and OVIS datasets, we use the bounding boxes with normalization in the function bbox_feat_extractor() of track_to_segmetn_head.py by mistake. _However, the bounding boxes in bbox_feat_extractor() function should not be normalized._ We update the results and trained models for YTVIS2021 and OVIS datasets. Apologize for our negligence.
 - [12/06/2021] Update the solution for the error in deform_conv_cuda.cu 
 - [22/04/2021] Add experimental results on [YTVIS2021](https://youtube-vos.org/dataset/vis/) and [OVIS](http://songbai.site/ovis/) datasets
 - [14/04/2021] Release code on Github and paper on arxiv
@@ -91,35 +92,35 @@ The code is implmented for our paper in CVPR2021:
 
 
 # Evaluation 
-## Quantitative Results on YTVIS2019
+## Quantitative Results on YTVIS2019 ((trained with 12 epoches))
 Here are our STMask models (released on April, 2021) along with their FPS on a 2080Ti and mAP on `valid set`, where mAP and mAP* are obtained under cross class fast nms and fast nms respectively. 
 Note that FCB(ali) and FCB(ada) are only executed on the classification branch.
 
 | Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | mAP* | Weights |                                                                                                         
 |:----------:      |:-------------:|:----:|:----:    |----|------|------|------|-----------------------------------------------------------------------------------------------------------|
-| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ali) | TF | 27.8 | -    | 32.1 | [STMask_plus_resnet50_ali.pth](https://drive.google.com/file/d/1J9L2oDNqm40wwzKn1iIwvXnPIr5n1kQP/view?usp=sharing) | 
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 28.6 | 32.8 | 33.0 | [STMask_plus_resnet50_ada.pth](https://drive.google.com/file/d/1HbtRX3sH_3CZTAjuIIMv8hIdTuqItfwq/view?usp=sharing) |
-| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1R_SturnDgIPqPp8L5m6BUT44QO2QvsW6/view?usp=sharing) |    
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ali) | TF | 22.1 | 36.3 | 37.1 | [STMask_plus_base_ali.pth](https://drive.google.com/file/d/1Cza-I9xAqkzXKlaTJrSIzlP4pcC0og4f/view?usp=sharing)  |   
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth](https://drive.google.com/file/d/1ZjQWiURoHZnyafWaPzgvYSEibk77rGDa/view?usp=sharing)  |   
+| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/14RHpTHA5GZGbuyHzc3bgn0luTsl4STuo/view?usp=sharing) |
+| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ali) | TF | 27.8 | -    | 32.1 | [STMask_plus_resnet50_ali.pth](https://drive.google.com/file/d/1ZWIH0oFL8kNU4roe-kwiL9Q8lGgZ8MwJ/view?usp=sharing) | 
+| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 28.6 | 32.8 | 33.0 | [STMask_plus_resnet50_ada.pth](https://drive.google.com/file/d/1fxkEtjiIwwqgc-wh-e-7OPLBNjDu-faA/view?usp=sharing) |
+| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1qgq8yC8otUMJMsffsaC288YOAwYf3OIz/view?usp=sharing) |    
+| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ali) | TF | 22.1 | 36.3 | 37.1 | [STMask_plus_base_ali.pth](https://drive.google.com/file/d/1ZWIH0oFL8kNU4roe-kwiL9Q8lGgZ8MwJ/view?usp=sharing)  |   
+| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth](https://drive.google.com/file/d/1Y5TZZVY9BF2Jq1F2_g4ZRfrmy6B6hEVn/view?usp=sharing)  |   
 
-## Quantitative Results on YTVIS2021 
+## Quantitative Results on YTVIS2021 (trained with 12 epoches)
 | Image Size       | Backbone      | FCA  | FCB      | TF | mAP* | Weights |                                                                                                         
 |:----------:      |:-------------:|:----:|:----:    |----|------|-----------------------------------------------------------------------------------------------------------|
-| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 29.2 | [STMask_plus_resnet50_YTVIS2021.pth](https://drive.google.com/file/d/1Rmz2-qtMlHPrTRVTU1gByHaBM0608u15/view?usp=sharing) |
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 31.1 | [STMask_plus_resnet50_ada_YTVIS2021.pth](https://drive.google.com/file/d/1q50kkB-GY30Gx6o278a0mxHmz_0Yz3t_/view?usp=sharing) |
-| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 32.4 | [STMask_plus_base_YTVIS2021.pth](https://drive.google.com/file/d/1iBtnE1vX3-8hV69lL4RYfYkz2R8ZZj6J/view?usp=sharing) |    
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 32.7 | [STMask_plus_base_ada_YTVIS2021.pth](https://drive.google.com/file/d/1o99-Cg8L7MIzAP-Rjm06G93HitGadJMi/view?usp=sharing)  |   
+| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 30.6 | [STMask_plus_resnet50_YTVIS2021.pth](https://drive.google.com/file/d/1i_Wy2z2H_Z9vSf8oNqikhVNdVqSomoVP/view?usp=sharing) |
+| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 31.1 | [STMask_plus_resnet50_ada_YTVIS2021.pth](https://drive.google.com/file/d/1XxP8rVwjH2-aMfKtX3gW_89Z7-5ZiNjt/view?usp=sharing) |
+| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 33.7 | [STMask_plus_base_YTVIS2021.pth](https://drive.google.com/file/d/1gXyo25muXlFxjuXKO_MblKsvDramBGC8/view?usp=sharing) |    
+| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 34.6 | [STMask_plus_base_ada_YTVIS2021.pth](https://drive.google.com/file/d/1EcZcvSdPR6aMl1hpBIGY2S9IUHmonzR5/view?usp=sharing)  |   
 
 
-## Quantitative Results on OVIS 
+## Quantitative Results on OVIS (trained with 20 epoches)
 | Image Size       | Backbone      | FCA  | FCB      | TF | mAP* | Weights |                                                                                                         
 |:----------:      |:-------------:|:----:|:----:    |----|------|-----------------------------------------------------------------------------------------------------------|
-| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 13.1 | [STMask_plus_resnet50_OVIS.pth](https://drive.google.com/file/d/1PDLajHIyzsTxu3dZwnUXJReI0mXYsSQq/view?usp=sharing) |
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 13.0 | [STMask_plus_resnet50_ada_OVIS.pth](https://drive.google.com/file/d/10qx2dBeksHlNxG5nmPaNOyz35Bl6u2uQ/view?usp=sharing)|
-| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 15.1 | [STMask_plus_base_OVIS.pth](https://drive.google.com/file/d/1lw2YSEO58kDOgqtg6tlZueCCQkLMV1QX/view?usp=sharing) |    
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 13.9 | [STMask_plus_base_ada_OVIS.pth](https://drive.google.com/file/d/1lDzOe1ASykeOco0M-h7XWsbPEYStuTzK/view?usp=sharing)  |   
+| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 15.4 | [STMask_plus_resnet50_OVIS.pth](https://drive.google.com/file/d/18aij_6YboxVzScc0Nmcb50nb0uczal6P/view?usp=sharing) |
+| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 15.4 | [STMask_plus_resnet50_ada_OVIS.pth](https://drive.google.com/file/d/10qx2dBeksHlNxG5nmPaNOyz35Bl6u2uQ/view?usp=sharing)|
+| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 17.3 | [STMask_plus_base_OVIS.pth](https://drive.google.com/file/d/1lw2YSEO58kDOgqtg6tlZueCCQkLMV1QX/view?usp=sharing) |    
+| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 15.8 | [STMask_plus_base_ada_OVIS.pth](https://drive.google.com/file/d/1zJazhMlrYHydnHggKhBjiICVVWpr5djS/view?usp=sharing)  |   
 
 
 To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_plus_base.pth`). 

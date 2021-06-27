@@ -12,7 +12,7 @@ import cv2
 from utils.functions import SavePath
 
 
-def bbox2result_with_id(preds, classes):
+def bbox2result_with_id(preds, img_meta, classes):
     """Convert detection results to a list of numpy arrays.
 
     Args:
@@ -23,9 +23,10 @@ def bbox2result_with_id(preds, classes):
     Returns:
         list(ndarray): bbox results of each class
     """
-
+    video_id, frame_id = img_meta['video_id'], img_meta['frame_id']
+    results = {'video_id': video_id, 'frame_id': frame_id}
     if preds['box'].shape[0] == 0:
-        return dict()
+        return results
     else:
         bboxes = preds['box'].cpu().numpy()
         if preds['class'] is not None:
@@ -36,7 +37,6 @@ def bbox2result_with_id(preds, classes):
         scores = preds['score'].cpu().numpy()
         segms = preds['segm']
         obj_ids = preds['box_ids'].cpu().numpy()
-        results = {}
         if labels is not None:
             for bbox, label, score, segm, obj_id in zip(bboxes, labels, scores, segms, obj_ids):
                 if obj_id >= 0:
@@ -50,38 +50,35 @@ def bbox2result_with_id(preds, classes):
         return results
 
 
-def results2json_videoseg(dataset, results, out_file, sampler_img_ids=None):
+def results2json_videoseg(results, out_file):
     json_results = []
     vid_objs = {}
     size = len(results)
-    # if current sub_dataset is only a part of dataset, you should give image index in Sampler to sampler_img_ids
-    if sampler_img_ids is None:
-        sampler_img_ids = range(size)
 
     for idx in range(size):
         # assume results is ordered
 
-        vid_id, frame_id = dataset.img_ids[sampler_img_ids[idx]]
-        vid_id = dataset.vid_ids[vid_id]
+        vid_id, frame_id = results[idx]['video_id'], results[idx]['frame_id']
         if idx == size - 1:
             is_last = True
         else:
-            _, frame_id_next = dataset.img_ids[sampler_img_ids[idx] + 1]
-            is_last = frame_id_next == 0
+            vid_id_next, frame_id_next = results[idx + 1]['video_id'], results[idx + 1]['frame_id']
+            is_last = vid_id_next != vid_id
 
         det = results[idx]
         for obj_id in det:
-            bbox = det[obj_id]['bbox']
-            score = det[obj_id]['score']
-            segm = det[obj_id]['segm']
-            label = det[obj_id]['label']
-            # label_all = det[obj_id]['label_all']
-            if obj_id not in vid_objs:
-                vid_objs[obj_id] = {'scores': [], 'cats': [], 'segms': {}}
-            vid_objs[obj_id]['scores'].append(score)
-            vid_objs[obj_id]['cats'].append(label)
-            segm['counts'] = segm['counts'].decode()
-            vid_objs[obj_id]['segms'][frame_id] = segm
+            if obj_id not in {'video_id', 'frame_id'}:
+                bbox = det[obj_id]['bbox']
+                score = det[obj_id]['score']
+                segm = det[obj_id]['segm']
+                label = det[obj_id]['label']
+                # label_all = det[obj_id]['label_all']
+                if obj_id not in vid_objs:
+                    vid_objs[obj_id] = {'scores': [], 'cats': [], 'segms': {}}
+                vid_objs[obj_id]['scores'].append(score)
+                vid_objs[obj_id]['cats'].append(label)
+                segm['counts'] = segm['counts'].decode()
+                vid_objs[obj_id]['segms'][frame_id] = segm
         if is_last:
             # store results of  the current video
             for obj_id, obj in vid_objs.items():

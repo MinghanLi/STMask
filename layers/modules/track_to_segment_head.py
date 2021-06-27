@@ -4,6 +4,7 @@ from datasets.config import cfg
 from spatial_correlation_sampler import spatial_correlation_sample
 import torch.nn.functional as F
 from mmcv.ops import roi_align
+from layers.box_utils import sanitize_coordinates_hw
 
 
 class TemporalNet(nn.Module):
@@ -33,9 +34,6 @@ class TemporalNet(nn.Module):
         x_reg = self.fc(x)
         x_coeff = self.fc_coeff(x)
 
-        variances = [0.1, 0.2]
-        x_reg = torch.cat([x_reg[:, :2] * variances[0], x_reg[:, 2:] * variances[1]], dim=1)
-
         return x_reg, x_coeff
 
 
@@ -64,13 +62,14 @@ def correlate(x1, x2, patch_size=11, dilation_patch=1):
     return F.leaky_relu_(out_corr, 0.1)
 
 
-def bbox_feat_extractor(feature_maps, boxes, pool_size):
+def bbox_feat_extractor(feature_maps, boxes_w_norm, h, w, pool_size):
     """
         feature_maps: size:1*C*h*w
-        boxes: Mx5 float box with (y1, x1, y2, x2) **with normalization**
+        boxes: Mx5 float box with (x1, y1, x2, y2) **without normalization**
     """
     # Currently only supports batch_size 1
-    boxes = boxes[:, [1, 0, 3, 2]]
+    boxes = sanitize_coordinates_hw(boxes_w_norm, h, w)
+    # boxes = boxes_w_norm
 
     # Crop and Resize
     # Result: [num_boxes, pool_height, pool_width, channels]

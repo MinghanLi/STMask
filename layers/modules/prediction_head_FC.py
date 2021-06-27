@@ -193,7 +193,6 @@ class PredictionModule_FC(nn.Module):
         if cfg.train_track:
             track = torch.cat(track, dim=-1).view(x.size(0), -1, src.embed_dim)
         mask = torch.cat(mask, dim=-1).view(x.size(0), -1, src.mask_dim)
-        # mask = cfg.mask_proto_coeff_activation(mask)
 
         # See box_utils.decode for an explanation of this
         if cfg.use_yolo_regressors:

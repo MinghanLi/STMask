@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from datasets.config import cfg, mask_type
 from layers import Detect, Detect_TF, Track, generate_candidate, \
-    Track_TF, PredictionModule, PredictionModule_FC, make_net, FPN, FastMaskIoUNet, TemporalNet, correlate
+    Track_TF, PredictionModule_FC, make_net, FPN, FastMaskIoUNet, TemporalNet, correlate
 from backbone import construct_backbone
 from utils import timer
 
@@ -316,9 +316,9 @@ class STMask(nn.Module):
                 # we only use the bbox features in the P3 layer
                 pred_outs['fpn_feat'] = fpn_outs[self.correlation_selected_layer]
                 pred_outs['T2S_feat'] = pred_outs['T2S_feat'][self.correlation_selected_layer]
-                candidate = generate_candidate(pred_outs)
-                candidate_after_NMS = self.Detect_TF(self, candidate[0], is_output_candidate=True)
-                pred_outs_after_NMS = self.Track_TF(self, candidate_after_NMS, img_meta[0], img=x)
+                candidates = generate_candidate(pred_outs)
+                candidates_after_NMS = self.Detect_TF(self, candidates, is_output_candidate=True)
+                pred_outs_after_NMS = self.Track_TF(self, candidates_after_NMS, img_meta, imgs=x)
 
             else:
                 pred_outs['mask_coeff'] = cfg.mask_proto_coeff_activation(pred_outs['mask_coeff'])

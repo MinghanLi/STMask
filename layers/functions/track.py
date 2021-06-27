@@ -77,7 +77,7 @@ class Track(object):
         det_score = detection['score']
         det_masks_coff = detection['mask_coeff']
         if cfg.train_track:
-            det_track_embed = F.normalize(detection['track'], dim=1)
+            det_track_embed = detection['track']
         else:
             det_track_embed = F.normalize(det_masks_coff, dim=1)
         proto_data = detection['proto']
@@ -86,10 +86,9 @@ class Track(object):
         mask_h, mask_w = proto_data.size()[:2]
 
         # get masks
-        det_masks = generate_mask(proto_data, det_masks_coff, det_bbox, cfg.mask_proto_mask_activation)
-        soft_crop = generate_rel_coord(det_bbox, mask_h, mask_w, sigma_scale=1.8)
-        det_masks_out = soft_crop * det_masks
-        det_masks = det_masks.gt(0.5).float()
+        det_masks_soft = generate_mask(proto_data, det_masks_coff, det_bbox)
+        det_masks = det_masks_soft.gt(0.5).float()
+        detection['mask'] = det_masks
 
         # compared bboxes in current frame with bboxes in previous frame to achieve tracking
         if is_first or (not is_first and self.prev_det_bbox is None):
@@ -114,22 +113,7 @@ class Track(object):
             cos_sim = (cos_sim + 1) / 2  # [0, 1]
 
             bbox_ious = jaccard(det_bbox, self.prev_det_bbox)
-            # mask_ious = mask_iou(det_masks, self.prev_det_masks)
-            mask_ious = []
-            det_bbox = torch.clamp(det_bbox, min=0, max=1)
-
-            for i in range(n_prev):
-                det_masks_shift = self.prev_protos[i] @ det_masks_coff.t()
-                det_masks_shift = cfg.mask_proto_mask_activation(det_masks_shift).permute(2, 0, 1).contiguous()
-                det_masks_shift = soft_crop * det_masks_shift
-                det_masks_shift = det_masks_shift.gt(0.5).float()  # [n_dets, h, w]
-                mask_ious.append(mask_iou(det_masks_shift, self.prev_det_masks[i].unsqueeze(0)))  # [n_dets, 1]
-
-            mask_ious = torch.cat(mask_ious, dim=1)
-
-            if cfg.use_DIoU_in_comp_scores:
-                term_DIoU = DIoU(det_bbox, self.prev_det_bbox)
-                bbox_ious = bbox_ious - term_DIoU
+            mask_ious = mask_iou(det_masks, self.prev_det_masks)
 
             # compute comprehensive score
             label_delta = (self.prev_det_labels == det_labels.view(-1, 1)).float()
@@ -186,45 +170,11 @@ class Track(object):
                             self.prev_scores[obj_id] = det_score[idx]
                             # self.prev_track[int(obj_id)] = torch.cat([self.prev_track[int(obj_id)], det_track_embed[idx][None]], dim=0)
 
-            missed_inst_id = (best_match_idx == -1) * (self.prev_scores[:n_prev] > 0.75)
-            if cfg.add_missed_masks and missed_inst_id.sum() > 0:
-                missed_masks_coeff = self.prev_det_masks_coeff[:n_prev][missed_inst_id].t()
-                missed_masks = proto_data @ missed_masks_coeff
-                missed_masks = missed_masks.permute(2, 0, 1).contiguous()
-                missed_masks = cfg.mask_proto_mask_activation(missed_masks)
-
-                # use relative coord to remove pixels that are far away bbox
-                bbox_missed = torch.clamp(self.prev_det_bbox[:n_prev][missed_inst_id], min=0, max=1)
-                soft_crop = generate_rel_coord(bbox_missed, mask_h, mask_w, sigma_scale=2)
-                missed_masks = soft_crop * missed_masks
-
-                used_idx = missed_masks.gt(0.5).sum([1, 2]) > 5
-                if used_idx.sum() > 0:
-                    add_inst_idx = torch.arange(n_prev)[missed_inst_id][used_idx]
-                    det_masks_out = torch.cat([det_masks_out, missed_masks[used_idx]], dim=0)
-                    det_obj_ids = torch.cat([det_obj_ids, add_inst_idx.type(torch.int32)])
-                    det_bbox = torch.cat([det_bbox, self.prev_det_bbox[:n_prev][add_inst_idx]], dim=0)
-                    det_labels = torch.cat([det_labels, self.prev_det_labels[:n_prev][add_inst_idx]], dim=0)
-                    det_score = torch.cat([det_score, self.prev_scores[add_inst_idx]], dim=0)
-                    det_track_embed = torch.cat([det_track_embed, self.prev_track_embed[:n_prev][add_inst_idx]], dim=0)
-                    det_masks_coff = torch.cat([det_masks_coff, self.prev_det_masks_coeff[:n_prev][add_inst_idx]],
-                                               dim=0)
-
-                    detection['box'] = det_bbox
-                    detection['class'] = det_labels
-                    detection['score'] = det_score
-                    detection['track'] = det_track_embed
-                    detection['mask_coeff'] = det_masks_coff
-                    if cfg.train_centerness:
-                        detection['centerness'] = torch.cat([detection['centerness'],
-                                                             torch.ones(add_inst_idx.size())], dim=0)
-
         detection['box_ids'] = det_obj_ids
-        detection['mask'] = det_masks_out
         if cfg.remove_false_inst:
             keep = det_obj_ids >= 0
-            for k in detection:
-                if k not in {'proto', 'bbox_idx', 'priors', 'loc_t'} and detection[k] is not None:
+            for k,  v in detection.items():
+                if k not in {'proto', 'bbox_idx', 'priors', 'loc_t'}:
                     detection[k] = detection[k][keep]
 
         return detection

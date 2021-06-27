@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from .box_utils import crop, crop_sipmask
+from datasets import cfg
 
 
 def generate_rel_coord(det_bbox, mask_h, mask_w, sigma_scale=2):
@@ -107,18 +108,20 @@ def plot_protos(protos, pred_masks, img_meta, num):
                          str(num), '.png']))
 
 
-def generate_mask(proto_data, mask_coeff, bbox, mask_proto_mask_activation, use_sipmask=False):
+def generate_mask(proto_data, mask_coeff, bbox=None, use_sipmask=False):
+    mask_coeff = cfg.mask_proto_coeff_activation(mask_coeff)
     # get masks
     if use_sipmask:
-        pred_masks00 = mask_proto_mask_activation(proto_data @ mask_coeff[:, :32].t())
-        pred_masks01 = mask_proto_mask_activation(proto_data @ mask_coeff[:, 32:64].t())
-        pred_masks10 = mask_proto_mask_activation(proto_data @ mask_coeff[:, 64:96].t())
-        pred_masks11 = mask_proto_mask_activation(proto_data @ mask_coeff[:, 96:128].t())
+        pred_masks00 = cfg.mask_proto_mask_activation(proto_data @ mask_coeff[:, :32].t())
+        pred_masks01 = cfg.mask_proto_mask_activation(proto_data @ mask_coeff[:, 32:64].t())
+        pred_masks10 = cfg.mask_proto_mask_activation(proto_data @ mask_coeff[:, 64:96].t())
+        pred_masks11 = cfg.mask_proto_mask_activation(proto_data @ mask_coeff[:, 96:128].t())
         pred_masks = crop_sipmask(pred_masks00, pred_masks01, pred_masks10, pred_masks11, bbox)
     else:
         pred_masks = proto_data @ mask_coeff.t()
-        pred_masks = mask_proto_mask_activation(pred_masks)
-        _, pred_masks = crop(pred_masks.squeeze(0), bbox)  # [mask_h, mask_w, n]
+        pred_masks = cfg.mask_proto_mask_activation(pred_masks)
+        if bbox is not None:
+            _, pred_masks = crop(pred_masks.squeeze(0), bbox)  # [mask_h, mask_w, n]
 
     det_masks = pred_masks.permute(2, 0, 1).contiguous()  # [n_masks, h, w]
 

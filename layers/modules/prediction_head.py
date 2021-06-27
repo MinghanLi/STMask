@@ -192,10 +192,13 @@ class PredictionModule(nn.Module):
                          mode='constant', value=0)
 
         priors = self.make_priors(conv_h, conv_w, x.device)
-        preds = {'loc': bbox, 'conf': conf, 'mask_coeff': mask, 'track': track, 'priors': priors}
+        preds = {'loc': bbox, 'conf': conf, 'mask_coeff': mask, 'priors': priors}
 
         if cfg.train_centerness:
             preds['centerness'] = centerness
+
+        if cfg.train_track:
+            preds['track'] = F.normalize(track, dim=-1)
 
         if cfg.use_mask_scoring:
             preds['score'] = score

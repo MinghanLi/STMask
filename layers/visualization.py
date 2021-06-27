@@ -7,48 +7,82 @@ from math import sqrt
 import matplotlib.pyplot as plt
 import mmcv
 import torch.nn.functional as F
+import os
 
 
-def display_box_shift(box, box_shift, conf=None, img_gpu=None, img_meta=None, idx=0):
-    if img_meta is not None:
-        path = ''.join(['results/results_1024_2/box_shift1/', str(img_meta[0]['video_id']), '_',
-                        str(img_meta[0]['frame_id']), '_', str(idx), '.png'])
-        path_ori = ''.join(['results/results_1024_2/box_shift1/', str(img_meta[0]['video_id']), '_',
-                           str(img_meta[0]['frame_id']), '_', str(idx), '_ori.png'])
+# Quick and dirty lambda for selecting the color for a particular index
+# Also keeps track of a per-gpu color cache for maximum speed
+def get_color(j, color_type, on_gpu=None, undo_transform=True):
+    global color_cache
+    color_idx = color_type[j] * 5 % len(cfg.COLORS)
+
+    if on_gpu is not None and color_idx in color_cache[on_gpu]:
+        return color_cache[on_gpu][color_idx]
     else:
-        path = 'results/results_1024_2/box_shift/0.png'
-        path_ori = 'results/results_1024_2/box_shift/0_ori.png'
+        color = cfg.COLORS[color_idx]
+        if not undo_transform:
+            # The image might come in as RGB or BRG, depending
+            color = (color[2], color[1], color[0])
+        if on_gpu is not None:
+            color = torch.Tensor(color).to(on_gpu).float() / 255.
+            color_cache[on_gpu][color_idx] = color
+        return color
 
-    h, w = 384, 640
+
+def display_box_shift(box, box_shift, mask_shift=None, img_meta=None, img_gpu=None, conf=None, mask_alpha=0.45):
+    if img_meta is None:
+        video_id, frame_id = 0, 0
+    else:
+        video_id, frame_id = img_meta['video_id'], img_meta['frame_id']
+
+    save_dir = 'weights/YTVIS2019/weights_r50_new/box_shift/'
+    save_dir = os.path.join(save_dir, str(video_id))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    path = ''.join([save_dir, '/', str(frame_id), '.png'])
+
     # Make empty black image
     if img_gpu is None:
+        h, w = 384, 640
         image = np.ones((h, w, 3), np.uint8) * 255
     else:
+
+        h, w = img_gpu.size()[1:]
         img_numpy = img_gpu.squeeze(0).permute(1, 2, 0).cpu().numpy()
         img_numpy = img_numpy[:, :, (2, 1, 0)]  # To BRG
         img_numpy = (img_numpy * np.array(STD) + np.array(MEANS)) / 255.0
         # img_numpy = img_numpy[:, :, (2, 1, 0)]  # To RGB
-        img_numpy = np.clip(img_numpy, 0, 1)
+        img_numpy = np.clip(img_numpy, 0, 1) * 255
         img_gpu = torch.Tensor(img_numpy).cuda()
-        image = (img_gpu * 255).byte().cpu().numpy()
+
+    # plot pred bbox
+    color_type = range(box.size(0))
+    if mask_shift is not None:
+        # Undo padding for masks
+        # gt_masks_cur = gt_masks_cur[:, :img_h, :img_w].float()
+        mask_shift = mask_shift.unsqueeze(-1).repeat(1, 1, 1, 3)
+        # This is 1 everywhere except for 1-mask_alpha where the mask is
+        inv_alph_masks = mask_shift.sum(0) * (-mask_alpha) + 1
+        mask_shift_color = []
+        for i in range(box.size(0)):
+            color = get_color(i, color_type, on_gpu=img_gpu.device.index).view(1, 1, 3)
+            mask_shift_color.append(mask_shift[i] * color * mask_alpha)
+        mask_shift_color = torch.stack(mask_shift_color, dim=0).sum(0)
+        img_gpu = (img_gpu * inv_alph_masks + mask_shift_color)
+
+    image = img_gpu.byte().cpu().numpy()
 
     if conf is not None:
         scores, classes = conf[:, 1:].max(dim=1)
-    display_labels = False
-    # cv2.imwrite(path_ori, image)
-
-    # Create a named colour
-    red = [0, 0, 255]
-    black = [0, 0, 0]
-    # plot pred bbox
-    for i in range(box.size(0)):
-        cv2.rectangle(image, (box[i, 0]*w, box[i, 1]*h), (box[i, 2]*w, box[i, 3]*h), black, 4)
 
     for i in range(box.size(0)):
+        color = get_color(i, color_type)
+        cv2.rectangle(image, (box[i, 0]*w, box[i, 1]*h), (box[i, 2]*w, box[i, 3]*h), color, 2)
+
         cv2.rectangle(image, (box_shift[i, 0] * w, box_shift[i, 1] * h),
-                             (box_shift[i, 2] * w, box_shift[i, 3] * h), red, 4)
+                             (box_shift[i, 2] * w, box_shift[i, 3] * h), color, 4)
 
-        if conf is not None and display_labels:
+        if conf is not None:
             text_str = '%s: %.2f' % (classes[i].item()+1, scores[i])
 
             font_face = cv2.FONT_HERSHEY_DUPLEX
@@ -136,6 +170,39 @@ def display_feature_align_dcn(detection, offset, loc_data, img_gpu=None, img_met
     else:
         path = 'results/results_1024_2/FCB/0.png'
     cv2.imwrite(path, image)
+
+
+def display_correlation_map_patch(x_corr, img_meta=None):
+    if img_meta is not None:
+        video_id, frame_id = img_meta['video_id'], img_meta['frame_id']
+    else:
+        video_id, frame_id = 0, 0
+
+    save_dir = 'weights/YTVIS2019/weights_r50_new/box_shift/'
+    save_dir = os.path.join(save_dir, str(video_id))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    # x_corr = x_corr[0, :, :18, :]**2
+    bs, ch, h, w = x_corr.size()
+    # x_corr = F.normalize(x_corr, dim=1)
+    r = int(sqrt(ch))
+    for i in range(bs):
+        x_corr_cur = x_corr[i]
+        x_show = x_corr_cur.view(r, r, h, w)
+
+        x_show = x_show.permute(0, 2, 1, 3).contiguous().view(h*r, r*w)
+        x_numpy = x_show.detach().cpu().numpy()
+
+        path_max = ''.join([save_dir, '/', str(frame_id), '_', str(i), '_max_corr_patch.png'])
+        max_corr = x_corr_cur.max(dim=0)[0].detach().cpu().numpy()
+        plt.imshow(max_corr)
+        plt.savefig(path_max)
+
+        path = ''.join([save_dir, '/', str(frame_id), '_', str(i), '_corr_patch.png'])
+        plt.axis('off')
+        plt.pcolormesh(x_numpy)
+        plt.savefig(path)
+        plt.clf()
 
 
 def display_correlation_map(x_corr, img_meta=None, idx=0):

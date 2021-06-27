@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from ..box_utils import decode, jaccard, mask_iou, crop
+from ..mask_utils import generate_mask
 from utils import timer
 
 from datasets import cfg
@@ -31,7 +32,7 @@ class Detect(object):
             raise ValueError('nms_threshold must be non negative.')
         self.conf_thresh = conf_thresh
         
-        self.use_cross_class_nms = False
+        self.use_cross_class_nms = True
         self.use_fast_nms = True
 
     def __call__(self, predictions, net):
@@ -152,17 +153,15 @@ class Detect(object):
         _, idx = scores.sort(0, descending=True)
         idx = idx[:top_k]
 
+        # Compute the pairwise IoU between the boxes
+        boxes_idx = boxes[idx]
+        iou = jaccard(boxes_idx, boxes_idx)
+
         if cfg.nms_as_miou:
-            det_masks = proto_data @ masks_coeff[idx].t()
-            det_masks = cfg.mask_proto_mask_activation(det_masks)
-            _, det_masks = crop(det_masks.squeeze(0), boxes[idx])
-            det_masks = det_masks.permute(2, 0, 1).contiguous()  # [n_masks, h, w]
-            det_masks = det_masks.gt(0.5).float()
-            iou = mask_iou(det_masks, det_masks)
-        else:
-            # Compute the pairwise IoU between the boxes
-            boxes_idx = boxes[idx]
-            iou = jaccard(boxes_idx, boxes_idx)
+            det_masks_soft = generate_mask(proto_data, masks_coeff[idx], boxes[idx])
+            det_masks = det_masks_soft.gt(0.5).float()
+            miou = mask_iou(det_masks, det_masks)
+            iou = 0.5 * (iou + miou)
 
         # Zero out the lower triangle of the cosine similarity matrix and diagonal
         iou = torch.triu(iou, diagonal=1)

@@ -42,6 +42,26 @@ YouTube_VOS_LABEL_MAP = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8,
                          25: 25, 26: 26, 27: 27, 28: 28, 29: 29, 30: 30, 31: 31, 32: 32,
                          33: 33, 34: 34, 35: 35, 36: 36, 37: 37, 38: 38, 39: 39, 40: 40}
 
+YouTube_VOS2021_CLASSES = ('airplane', 'bear', 'bird', 'boat', 'car',
+                           'cat', 'cow', 'deer', 'dog', 'duck',
+                           'earless_seal', 'elephant', 'fish', 'flying_disc', 'fox',
+                           'frog', 'giant_panda', 'giraffe', 'horse', 'leopard',
+                           'lizard', 'monkey', 'motorbike', 'mouse', 'parrot',
+                           'person', 'rabbit', 'shark', 'skateboard', 'snake',
+                           'snowboard', 'squirrel', 'surfboard', 'tennis_racket', 'tiger',
+                           'train', 'truck', 'turtle', 'whale', 'zebra')
+
+OVIS_CLASSES = ('person', 'bird', 'cat', 'dog', 'horse',
+                'sheep', 'cow', 'elephant', 'bear', 'zebra',
+                'giraffe', 'poultry', 'giant panda', 'lizard', 'parrot',
+                'monkey', 'rabbit', 'tiger', 'fish', 'turtle',
+                'bicycle', 'motorcycle', 'airplane', 'boat', 'vehicle')
+
+OVIS_LABEL_MAP = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8,
+                  9: 9, 10: 10, 11: 11, 12: 12, 13: 13, 14: 14, 15: 15, 16: 16,
+                  17: 17, 18: 18, 19: 19, 20: 20, 21: 21, 22: 22, 23: 23, 24: 24,
+                  25: 25}
+
 # ----------------------- CONFIG CLASS ----------------------- #
 
 
@@ -115,7 +135,7 @@ dataset_base = Config({
 
 train_YouTube_VOS_dataset = dataset_base.copy({
     'img_prefix': '../datasets/YouTube_VOS2019/train/JPEGImages',
-    'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/train.json',
+    'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/valid_sub.json',
     # 'extra_aug': dict(random_crop=dict(min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
     # 'extra_aug': dict(expand=dict(mean=(123.675, 116.28, 103.53), to_rgb=True, ratio_range=(1, 3))),
 })
@@ -138,6 +158,60 @@ test_YouTube_VOS_dataset = dataset_base.copy({
     'img_prefix': '../datasets/YouTube_VOS2019/test/JPEGImages',
     'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/test.json',
     'has_gt': False,
+})
+
+train_YouTube_VOS2021_dataset = dataset_base.copy({
+    'img_prefix': '../datasets/YouTube_VOS2021/train/JPEGImages',
+    'ann_file': '../datasets/YouTube_VOS2021/train/instances.json',
+    # 'extra_aug': dict(random_crop=dict(min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
+    # 'extra_aug': dict(expand=dict(mean=(123.675, 116.28, 103.53), to_rgb=True, ratio_range=(1, 3))),
+})
+
+valid_sub_YouTube_VOS2021_dataset = dataset_base.copy({
+    'img_prefix': '../datasets/YouTube_VOS2021/train/JPEGImages',
+    'ann_file': '../datasets/YouTube_VOS2021/annotations_instances/valid_sub.json',
+    'test_mode': False,
+})
+
+valid_YouTube_VOS2021_dataset = dataset_base.copy({
+
+    'img_prefix': '../datasets/YouTube_VOS2021/valid/JPEGImages',
+    'ann_file': '../datasets/YouTube_VOS2021/valid/instances.json',
+    'test_mode': True,
+})
+
+test_YouTube_VOS2021_dataset = dataset_base.copy({
+
+    'img_prefix': '../datasets/YouTube_VOS2021/test/JPEGImages',
+    'ann_file': '../datasets/YouTube_VOS2021/test/instances.json',
+})
+
+
+train_OVIS_dataset = dataset_base.copy({
+    'img_prefix': '../datasets/OVIS/train',
+    'ann_file': '../datasets/OVIS/annotations_valid_sub.json',
+    # 'extra_aug': dict(random_crop=dict(min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
+    # 'extra_aug': dict(expand=dict(mean=(123.675, 116.28, 103.53), to_rgb=True, ratio_range=(1, 3))),
+})
+
+valid_sub_OVIS_dataset = dataset_base.copy({
+    'img_prefix': '../datasets/OVIS/train',
+    'ann_file': '../datasets/OVIS/annotations_valid_sub.json',
+    'test_mode': False,
+})
+
+valid_OVIS_dataset = dataset_base.copy({
+
+    'img_prefix': '../datasets/OVIS/valid',
+    'ann_file': '../datasets/OVIS/annotations_valid.json',
+    'test_mode': True,
+})
+
+test_OVIS_dataset = dataset_base.copy({
+
+    'img_prefix': '../datasets/OVIS/test',
+    'ann_file': '../datasets/OVIS/annotations_test.json',
+    'test_mode': True,
 })
 
 # ----------------------- TRANSFORMS ----------------------- #
@@ -230,7 +304,7 @@ resnet50_backbone = resnet101_backbone.copy({
 resnet50_dcn_inter3_backbone = resnet50_backbone.copy({
     'name': 'ResNet50_DCN_Interval3',
     'path': 'yolact_plus_resnet50_54_800000.pth',
-    'args': ([3, 4, 6, 3], [0, 4, 6, 3], 3),
+    'args': ([3, 4, 6, 3], [0, 4, 6, 3], 2),
 })
 
 darknet53_backbone = backbone_base.copy({
@@ -554,7 +628,7 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     # loss
     'conf_alpha': 6.125,
     'bbox_alpha': 1.5,
-    'BIoU_alpha': 0.5,
+    'BIoU_alpha': 5,
     'bboxiou_alpha': 5,
     'maskiou_alpha': 5,
     'track_alpha': 5,
@@ -608,14 +682,14 @@ STMask_base_config = YouTube_VOS_base_config.copy({
 
     # Track settings
     'train_track': True,
-    'match_coeff': [0, 0.7, 0.3, 0],   # scores, mask_iou, box_iou, label
+    'match_coeff': [0, 1, 2, 0],   # scores, mask_iou, box_iou, label
     'embed_dim': 128,
 
     # temporal fusion module settings
     'temporal_fusion_module': True,
     'correlation_patch_size': 11,
     'correlation_selected_layer': 1,
-    'boxshift_alpha': 10,
+    'boxshift_alpha': 5,
     'maskshift_alpha': 6.125,
     'maskshift_loss': True,
 
@@ -651,7 +725,6 @@ STMask_base_config = YouTube_VOS_base_config.copy({
     'use_valid_sub': False,
     'only_calc_metrics': False,
     'only_count_classes': False,
-    'use_DIoU_in_comp_scores': False,
     'display_corr': False,
     'display_mask_single': False,
     'eval_single_im': False,
@@ -715,9 +788,6 @@ STMask_plus_resnet50_config = STMask_resnet50_config.copy({
 
 STMask_plus_resnet50_ada_config = STMask_plus_resnet50_config.copy({
     'name': 'STMask_plus_resnet50_ada',
-    'backbone': resnet50_dcn_inter3_backbone.copy({
-        'path': 'yolact_plus_resnet50_ada_54.pth',
-    }),
 
     # FCB settings
     'use_pred_offset': True,
@@ -729,9 +799,6 @@ STMask_plus_resnet50_ada_config = STMask_plus_resnet50_config.copy({
 
 STMask_plus_resnet50_ali_config = STMask_plus_resnet50_config.copy({
     'name': 'STMask_plus_resnet50_ali',
-    'backbone': resnet50_dcn_inter3_backbone.copy({
-        'path': 'yolact_plus_resnet50_ada_54.pth',
-    }),
 
     # FCB settings
     'use_pred_offset': False,
@@ -753,6 +820,156 @@ STMask_darknet53_config = STMask_base_config.copy({
         'use_square_anchors': True,  # This is for backward compatability with a bug
     }),
 })
+
+# ----------------------- OVIS datasets CONFIGS ----------------------- #
+
+STMask_plus_base_OVIS_config = STMask_plus_base_config.copy({
+    'name': 'STMask_plus_base_OVIS',
+
+    # Dataset stuff
+    'train_dataset': train_OVIS_dataset,
+    'valid_sub_dataset': valid_sub_OVIS_dataset,
+    'valid_dataset': valid_OVIS_dataset,
+    'test_dataset': test_OVIS_dataset,
+    'num_classes': 26,  # This should include the background class
+    'classes': OVIS_CLASSES,
+})
+
+STMask_plus_base_ada_OVIS_config = STMask_plus_base_ada_config.copy({
+    'name': 'STMask_plus_base_ada_OVIS',
+
+    # Dataset stuff
+    'train_dataset': train_OVIS_dataset,
+    'valid_sub_dataset': valid_sub_OVIS_dataset,
+    'valid_dataset': valid_OVIS_dataset,
+    'test_dataset': test_OVIS_dataset,
+    'num_classes': 26,  # This should include the background class
+    'classes': OVIS_CLASSES,
+})
+
+STMask_plus_base_ali_OVIS_config = STMask_plus_base_ali_config.copy({
+    'name': 'STMask_plus_base_ali_OVIS',
+
+    # Dataset stuff
+    'train_dataset': train_OVIS_dataset,
+    'valid_sub_dataset': valid_sub_OVIS_dataset,
+    'valid_dataset': valid_OVIS_dataset,
+    'test_dataset': test_OVIS_dataset,
+    'num_classes': 26,  # This should include the background class
+    'classes': OVIS_CLASSES,
+})
+
+STMask_plus_resnet50_OVIS_config = STMask_plus_resnet50_config.copy({
+    'name': 'STMask_plus_resnet50_OVIS',
+
+    # Dataset stuff
+    'train_dataset': train_OVIS_dataset,
+    'valid_sub_dataset': valid_sub_OVIS_dataset,
+    'valid_dataset': valid_OVIS_dataset,
+    'test_dataset': test_OVIS_dataset,
+    'num_classes': 26,  # This should include the background class
+    'classes': OVIS_CLASSES,
+})
+
+STMask_plus_resnet50_ada_OVIS_config = STMask_plus_resnet50_ada_config.copy({
+    'name': 'STMask_plus_resnet50_ada_OVIS',
+
+    # Dataset stuff
+    'train_dataset': train_OVIS_dataset,
+    'valid_sub_dataset': valid_sub_OVIS_dataset,
+    'valid_dataset': valid_OVIS_dataset,
+    'test_dataset': test_OVIS_dataset,
+    'num_classes': 26,  # This should include the background class
+    'classes': OVIS_CLASSES,
+})
+
+STMask_plus_resnet50_ali_OVIS_config = STMask_plus_resnet50_ali_config.copy({
+    'name': 'STMask_plus_resnet50_ali_OVIS',
+
+    # Dataset stuff
+    'train_dataset': train_OVIS_dataset,
+    'valid_sub_dataset': valid_sub_OVIS_dataset,
+    'valid_dataset': valid_OVIS_dataset,
+    'test_dataset': test_OVIS_dataset,
+    'num_classes': 26,  # This should include the background class
+    'classes': OVIS_CLASSES,
+})
+
+
+# ----------------------- YTVIS2021 datasets CONFIGS ----------------------- #
+
+STMask_plus_base_YTVIS2021_config = STMask_plus_base_config.copy({
+    'name': 'STMask_plus_base_YTVIS2021',
+
+    # Dataset stuff
+    'train_dataset': train_YouTube_VOS2021_dataset,
+    'valid_sub_dataset': valid_sub_YouTube_VOS2021_dataset,
+    'valid_dataset': valid_YouTube_VOS2021_dataset,
+    'test_dataset': test_YouTube_VOS2021_dataset,
+    'num_classes': 41,  # This should include the background class
+    'classes': YouTube_VOS2021_CLASSES,
+})
+
+STMask_plus_base_ada_YTVIS2021_config = STMask_plus_base_ada_config.copy({
+    'name': 'STMask_plus_base_ada_YTVIS2021',
+
+    # Dataset stuff
+    'train_dataset': train_YouTube_VOS2021_dataset,
+    'valid_sub_dataset': valid_sub_YouTube_VOS2021_dataset,
+    'valid_dataset': valid_YouTube_VOS2021_dataset,
+    'test_dataset': test_YouTube_VOS2021_dataset,
+    'num_classes': 41,  # This should include the background class
+    'classes': YouTube_VOS2021_CLASSES,
+})
+
+STMask_plus_base_ali_YTVIS2021_config = STMask_plus_base_ali_config.copy({
+    'name': 'STMask_plus_base_ali_YTVIS2021',
+
+    # Dataset stuff
+    'train_dataset': train_YouTube_VOS2021_dataset,
+    'valid_sub_dataset': valid_sub_YouTube_VOS2021_dataset,
+    'valid_dataset': valid_YouTube_VOS2021_dataset,
+    'test_dataset': test_YouTube_VOS2021_dataset,
+    'num_classes': 41,  # This should include the background class
+    'classes': YouTube_VOS2021_CLASSES,
+})
+
+STMask_plus_resnet50_YTVIS2021_config = STMask_plus_resnet50_config.copy({
+    'name': 'STMask_plus_resnet50_YTVIS2021',
+
+    # Dataset stuff
+    'train_dataset': train_YouTube_VOS2021_dataset,
+    'valid_sub_dataset': valid_sub_YouTube_VOS2021_dataset,
+    'valid_dataset': valid_YouTube_VOS2021_dataset,
+    'test_dataset': test_YouTube_VOS2021_dataset,
+    'num_classes': 41,  # This should include the background class
+    'classes': YouTube_VOS2021_CLASSES,
+})
+
+STMask_plus_resnet50_ada_YTVIS2021_config = STMask_plus_resnet50_ada_config.copy({
+    'name': 'STMask_plus_resnet50_ada_YTVIS2021',
+
+    # Dataset stuff
+    'train_dataset': train_YouTube_VOS2021_dataset,
+    'valid_sub_dataset': valid_sub_YouTube_VOS2021_dataset,
+    'valid_dataset': valid_YouTube_VOS2021_dataset,
+    'test_dataset': test_YouTube_VOS2021_dataset,
+    'num_classes': 41,  # This should include the background class
+    'classes': YouTube_VOS2021_CLASSES,
+})
+
+STMask_plus_resnet50_ali_YTVIS2021_config = STMask_plus_resnet50_ali_config.copy({
+    'name': 'STMask_plus_resnet50_ali_YTVIS2021',
+
+    # Dataset stuff
+    'train_dataset': train_YouTube_VOS2021_dataset,
+    'valid_sub_dataset': valid_sub_YouTube_VOS2021_dataset,
+    'valid_dataset': valid_YouTube_VOS2021_dataset,
+    'test_dataset': test_YouTube_VOS2021_dataset,
+    'num_classes': 41,  # This should include the background class
+    'classes': YouTube_VOS2021_CLASSES,
+})
+
 
 # Default config
 cfg = STMask_base_config.copy()

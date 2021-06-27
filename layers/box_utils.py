@@ -317,6 +317,27 @@ def sanitize_coordinates(_x1, _x2, img_size:int, padding:int=0, cast:bool=True):
 
 
 @torch.jit.script
+def sanitize_coordinates_hw(box, h:int, w:int):
+    '''
+    :param box: [bs, n, 4], [x1, y1, x2, y2]
+    :param h: height of image
+    :param w:
+    :return:
+    '''
+
+    use_batch = True
+    if box.dim() == 2:
+        use_batch = False
+        box = box[None, ...]
+
+    x1, x2 = sanitize_coordinates(box[:, :, 0], box[:, :, 2], w, cast=False)
+    y1, y2 = sanitize_coordinates(box[:, :, 1], box[:, :, 3], h, cast=False)
+    box_wo_norm = torch.stack([x1, y1, x2, y2], dim=-1)
+
+    return box_wo_norm if use_batch else box_wo_norm.squeeze(0)
+
+
+@torch.jit.script
 def crop(masks, boxes, padding:int=1):
     """
     "Crop" predicted masks by zeroing out everything not in the predicted bbox.
