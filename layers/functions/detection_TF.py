@@ -24,7 +24,8 @@ class Detect_TF(object):
             raise ValueError('nms_threshold must be non negative.')
         self.conf_thresh = conf_thresh
 
-        self.use_cross_class_nms = False
+        self.use_cross_class_nms = True
+        self.use_fast_nms = True
 
     def __call__(self, net, candidates, is_output_candidate=False):
         """
@@ -183,21 +184,19 @@ class Detect_TF(object):
             if centerness_scores is not None:
                 centerness_scores = centerness_scores[keep]
             scores = scores[keep]
-            idx_out = idx[keep]
 
             # Only keep the top cfg.max_num_detections highest scores across all classes
             scores, idx = scores.sort(0, descending=True)
             idx = idx[:cfg.max_num_detections]
             scores = scores[:cfg.max_num_detections]
 
-            classes = classes[idx]
+            classes = classes[idx] + 1
             boxes = boxes[idx]
             masks_coeff = masks_coeff[idx]
             if cfg.train_track:
                 track = track[idx]
             if centerness_scores is not None:
                 centerness_scores = centerness_scores[idx]
-            idx_out = idx_out[idx]
 
             out_after_NMS = {'box': boxes, 'mask_coeff': masks_coeff, 'track': track, 'class': classes,
                              'score': scores, 'centerness': centerness_scores}

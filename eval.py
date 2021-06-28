@@ -524,6 +524,7 @@ def validation(net: STMask, valid_data=False, output_metrics_file=None):
         # Main eval loop
         for it, data_batch in enumerate(data_loader):
             timer.reset()
+
             with timer.env('Load Data'):
                 images, images_meta, ref_images, ref_images_meta = prepare_data(data_batch, is_cuda=True,
                                                                                 train_mode=False)

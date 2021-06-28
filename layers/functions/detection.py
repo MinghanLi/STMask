@@ -126,21 +126,15 @@ class Detect(object):
         
         if self.use_fast_nms:
             if self.use_cross_class_nms:
-                boxes_aft_nms, masks_aft_nms, track_aft_nms, classes_aft_nms, scores_aft_nms, \
-                centerness_score_aft_nms, idx_out = self.cc_fast_nms(boxes, masks_coeff, proto_data,
-                                                                     track, scores, centerness_scores,
-                                                                     self.nms_thresh, self.top_k)
+                out_after_nms = self.cc_fast_nms(boxes, masks_coeff, proto_data,
+                                                 track, scores, centerness_scores,
+                                                 self.nms_thresh, self.top_k)
             else:
-                boxes_aft_nms, masks_aft_nms, track_aft_nms, classes_aft_nms, scores_aft_nms, idx_out = \
-                    self.fast_nms(boxes, masks_coeff, track, scores, self.nms_thresh, self.top_k)
+                out_after_nms = self.fast_nms(boxes, masks_coeff, track, scores, self.nms_thresh, self.top_k)
         else:
-            boxes_aft_nms, masks_aft_nms, track_aft_nms, classes_aft_nms, scores_aft_nms = \
-                self.traditional_nms(boxes, masks_coeff, track, scores, self.nms_thresh, self.conf_thresh)
+            out_after_nms = self.traditional_nms(boxes, masks_coeff, track, scores, self.nms_thresh, self.conf_thresh)
 
-        idx = torch.arange(len(keep))[keep][idx_out]
-
-        return {'box': boxes_aft_nms, 'mask_coeff': masks_aft_nms, 'track': track_aft_nms, 'class': classes_aft_nms,
-                'score': scores_aft_nms, 'centerness': centerness_score_aft_nms, 'bbox_idx': idx}
+        return out_after_nms
 
     def cc_fast_nms(self, boxes, masks_coeff, proto_data, track, conf, centerness_scores,
                     iou_threshold: float = 0.5, top_k: int = 200):
@@ -185,7 +179,12 @@ class Detect(object):
         if centerness_scores is not None:
             centerness_scores = centerness_scores[idx_out]
 
-        return boxes, masks_coeff, track, classes, scores, centerness_scores, idx_out
+        out_after_NMS = {'box': boxes, 'mask_coeff': masks_coeff, 'track': track, 'class': classes,
+                         'score': scores}
+        if centerness_scores is not None:
+            out_after_NMS['centerness'] = centerness_scores
+
+        return out_after_NMS
 
     def coefficient_nms(self, coeffs, scores, cos_threshold=0.9, top_k=400):
         _, idx = scores.sort(0, descending=True)
@@ -246,21 +245,22 @@ class Detect(object):
         if cfg.train_track:
             track = track[keep]
         scores = scores[keep]
-        idx_out = idx[keep]
 
         # Only keep the top cfg.max_num_detections highest scores across all classes
         scores, idx = scores.sort(0, descending=True)
         idx = idx[:cfg.max_num_detections]
         scores = scores[:cfg.max_num_detections]
 
-        classes = classes[idx]
+        classes = classes[idx] + 1
         boxes = boxes[idx]
         masks = masks[idx]
         if cfg.train_track:
             track = track[idx]
-        idx_out = idx_out[idx]
 
-        return boxes, masks, track, classes+1, scores, idx_out
+        out_after_NMS = {'box': boxes, 'mask_coeff': masks, 'track': track, 'class': classes,
+                         'score': scores}
+
+        return out_after_NMS
 
     def traditional_nms(self, boxes, masks, track, scores, iou_threshold=0.5, conf_thresh=0.05):
         num_classes = scores.size(0)
@@ -300,7 +300,13 @@ class Detect(object):
         scores = scores[:cfg.max_num_detections]
 
         idx = idx[idx2]
-        classes = classes[idx2]
+        classes = classes[idx2] + 1
+        masks = masks[idx]
+        track = track[idx]
+        boxes = boxes[idx] / cfg.max_size
+
+        out_after_NMS = {'box': boxes, 'mask_coeff': masks, 'track': track, 'class': classes,
+                         'score': scores}
 
         # Undo the multiplication above
-        return boxes[idx] / cfg.max_size, masks[idx], track[idx], classes, scores
+        return out_after_NMS

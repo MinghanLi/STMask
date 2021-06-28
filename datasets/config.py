@@ -135,7 +135,7 @@ dataset_base = Config({
 
 train_YouTube_VOS_dataset = dataset_base.copy({
     'img_prefix': '../datasets/YouTube_VOS2019/train/JPEGImages',
-    'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/valid_sub.json',
+    'ann_file': '../datasets/YouTube_VOS2019/annotations_instances/train.json',
     # 'extra_aug': dict(random_crop=dict(min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
     # 'extra_aug': dict(expand=dict(mean=(123.675, 116.28, 103.53), to_rgb=True, ratio_range=(1, 3))),
 })
@@ -189,7 +189,7 @@ test_YouTube_VOS2021_dataset = dataset_base.copy({
 
 train_OVIS_dataset = dataset_base.copy({
     'img_prefix': '../datasets/OVIS/train',
-    'ann_file': '../datasets/OVIS/annotations_valid_sub.json',
+    'ann_file': '../datasets/OVIS/annotations_train.json',
     # 'extra_aug': dict(random_crop=dict(min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
     # 'extra_aug': dict(expand=dict(mean=(123.675, 116.28, 103.53), to_rgb=True, ratio_range=(1, 3))),
 })
