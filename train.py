@@ -369,9 +369,9 @@ def train():
                         save_path_valid_metrics = save_path(epoch, iteration).replace('.pth', '.txt')
 
                         # valid_sub
-                        cfg.valid_sub_dataset.test_mode = False
-                        metrics = compute_validation_map(STMask_net, valid_data=False,
-                                                         output_metrics_file=save_path_valid_metrics)
+                        # cfg.valid_sub_dataset.test_mode = False
+                        # metrics = compute_validation_map(STMask_net, valid_data=False,
+                        #                                  output_metrics_file=save_path_valid_metrics)
 
                         # valid datasets
                         metrics_valid = compute_validation_map(STMask_net, valid_data=True,
