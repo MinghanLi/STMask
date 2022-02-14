@@ -92,35 +92,36 @@ The code is implmented for our paper in CVPR2021:
 
 
 # Evaluation 
+The input size on all VIS benchmarks is 360*640 here.
 ## Quantitative Results on YTVIS2019 ((trained with 12 epoches))
 Here are our STMask models (released on April, 2021) along with their FPS on a 2080Ti and mAP on `valid set`, where mAP and mAP* are obtained under cross class fast nms and fast nms respectively. 
-Note that FCB(ali) and FCB(ada) are only executed on the classification branch.
+Note that FCB(ali) and FCB(ada) are only executed on the classification branch. 
 
-| Image Size       | Backbone      | FCA  | FCB      | TF | FPS  | mAP  | mAP* | Weights |                                                                                                        
-|:----------:      |:-------------:|:----:|:----:    |----|------|------|------|-----------------------------------------------------------------------------------------------------------|
-| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/14RHpTHA5GZGbuyHzc3bgn0luTsl4STuo/view?usp=sharing) | 
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ali) | TF | 27.8 | -    | 32.1 | [STMask_plus_resnet50_ali.pth](https://drive.google.com/file/d/1ZWIH0oFL8kNU4roe-kwiL9Q8lGgZ8MwJ/view?usp=sharing) | 
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 28.6 | 32.8 | 33.0 | [STMask_plus_resnet50_ada.pth](https://drive.google.com/file/d/1fxkEtjiIwwqgc-wh-e-7OPLBNjDu-faA/view?usp=sharing) |
-| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1qgq8yC8otUMJMsffsaC288YOAwYf3OIz/view?usp=sharing) |    
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ali) | TF | 22.1 | 36.3 | 37.1 | [STMask_plus_base_ali.pth](https://drive.google.com/file/d/1ZWIH0oFL8kNU4roe-kwiL9Q8lGgZ8MwJ/view?usp=sharing)  |   
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth](https://drive.google.com/file/d/1Y5TZZVY9BF2Jq1F2_g4ZRfrmy6B6hEVn/view?usp=sharing)  |   
+| Backbone      | FCA  | FCB      | TF | FPS  | mAP  | mAP* | Weights |                                                                                                        
+|:-------------:|:----:|:----:    |----|------|------|------|-----------------------------------------------------------------------------------------------------------|
+| R50-DCN-FPN   | FCA  | -        | TF | 29.3 | 32.6 | 33.4 | [STMask_plus_resnet50.pth](https://drive.google.com/file/d/14RHpTHA5GZGbuyHzc3bgn0luTsl4STuo/view?usp=sharing) | 
+| R50-DCN-FPN   | FCA  | FCB(ali) | TF | 27.8 | -    | 32.1 | [STMask_plus_resnet50_ali.pth](https://drive.google.com/file/d/1ZWIH0oFL8kNU4roe-kwiL9Q8lGgZ8MwJ/view?usp=sharing) | 
+| R50-DCN-FPN   | FCA  | FCB(ada) | TF | 28.6 | 32.8 | 33.0 | [STMask_plus_resnet50_ada.pth](https://drive.google.com/file/d/1fxkEtjiIwwqgc-wh-e-7OPLBNjDu-faA/view?usp=sharing) |
+| R101-DCN-FPN  | FCA  | -        | TF | 24.5 | 36.0 | 36.3 | [STMask_plus_base.pth](https://drive.google.com/file/d/1qgq8yC8otUMJMsffsaC288YOAwYf3OIz/view?usp=sharing) |    
+| R101-DCN-FPN  | FCA  | FCB(ali) | TF | 22.1 | 36.3 | 37.1 | [STMask_plus_base_ali.pth](https://drive.google.com/file/d/1ZWIH0oFL8kNU4roe-kwiL9Q8lGgZ8MwJ/view?usp=sharing)  |   
+| R101-DCN-FPN  | FCA  | FCB(ada) | TF | 23.4 | 36.8 | 37.9 | [STMask_plus_base_ada.pth](https://drive.google.com/file/d/1Y5TZZVY9BF2Jq1F2_g4ZRfrmy6B6hEVn/view?usp=sharing)  |   
 ****
 ## Quantitative Results on YTVIS2021 (trained with 12 epoches)
-| Image Size       | Backbone      | FCA  | FCB      | TF | mAP* | Weights | Results |                                                                                                         
-|:----------:      |:-------------:|:----:|:----:    |----|------|-----------------------------------------------------------------------------------------------------------|------|
-| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 30.6 | [STMask_plus_resnet50_YTVIS2021.pth](https://drive.google.com/file/d/1i_Wy2z2H_Z9vSf8oNqikhVNdVqSomoVP/view?usp=sharing) | - |
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 31.1 | [STMask_plus_resnet50_ada_YTVIS2021.pth](https://drive.google.com/file/d/1XxP8rVwjH2-aMfKtX3gW_89Z7-5ZiNjt/view?usp=sharing) | [stdout.txt](https://drive.google.com/file/d/1jPVMy5CdrClti0XvhKUUz11QFa-W5Zpd/view?usp=sharing) |
-| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 33.7 | [STMask_plus_base_YTVIS2021.pth](https://drive.google.com/file/d/1gXyo25muXlFxjuXKO_MblKsvDramBGC8/view?usp=sharing) | - |
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 34.6 | [STMask_plus_base_ada_YTVIS2021.pth](https://drive.google.com/file/d/1EcZcvSdPR6aMl1hpBIGY2S9IUHmonzR5/view?usp=sharing)  |  [stdout.txt](https://drive.google.com/file/d/1i3cd28-FbIu6eXZUbgIZMO72IxRQZi7h/view?usp=sharing)
+| Backbone      | FCA  | FCB      | TF | mAP* | Weights | Results |                                                                                                         
+|:-------------:|:----:|:----:    |----|------|-----------------------------------------------------------------------------------------------------------|------|
+| R50-DCN-FPN   | FCA  | -        | TF | 30.6 | [STMask_plus_resnet50_YTVIS2021.pth](https://drive.google.com/file/d/1i_Wy2z2H_Z9vSf8oNqikhVNdVqSomoVP/view?usp=sharing) | - |
+| R50-DCN-FPN   | FCA  | FCB(ada) | TF | 31.1 | [STMask_plus_resnet50_ada_YTVIS2021.pth](https://drive.google.com/file/d/1XxP8rVwjH2-aMfKtX3gW_89Z7-5ZiNjt/view?usp=sharing) | [stdout.txt](https://drive.google.com/file/d/1jPVMy5CdrClti0XvhKUUz11QFa-W5Zpd/view?usp=sharing) |
+| R101-DCN-FPN  | FCA  | -        | TF | 33.7 | [STMask_plus_base_YTVIS2021.pth](https://drive.google.com/file/d/1gXyo25muXlFxjuXKO_MblKsvDramBGC8/view?usp=sharing) | - |
+| R101-DCN-FPN  | FCA  | FCB(ada) | TF | 34.6 | [STMask_plus_base_ada_YTVIS2021.pth](https://drive.google.com/file/d/1EcZcvSdPR6aMl1hpBIGY2S9IUHmonzR5/view?usp=sharing)  |  [stdout.txt](https://drive.google.com/file/d/1i3cd28-FbIu6eXZUbgIZMO72IxRQZi7h/view?usp=sharing)
 
 
 ## Quantitative Results on OVIS (trained with 20 epoches)
-| Image Size       | Backbone      | FCA  | FCB      | TF | mAP* | Weights | Results|                                                                                                        
-|:----------:      |:-------------:|:----:|:----:    |----|------|-----------------------------------------------------------------------------------------------------------|------|
-| [384,640]        | R50-DCN-FPN   | FCA  | -        | TF | 15.4 | [STMask_plus_resnet50_OVIS.pth](https://drive.google.com/file/d/18aij_6YboxVzScc0Nmcb50nb0uczal6P/view?usp=sharing) | - |
-| [384,640]        | R50-DCN-FPN   | FCA  | FCB(ada) | TF | 15.4 | [STMask_plus_resnet50_ada_OVIS.pth](https://drive.google.com/file/d/10qx2dBeksHlNxG5nmPaNOyz35Bl6u2uQ/view?usp=sharing) | [stdout.txt](https://drive.google.com/file/d/1jD_O1YMERQqXwi1m90PnfUj3NNduWz1W/view?usp=sharing) |
-| [384,640]        | R101-DCN-FPN  | FCA  | -        | TF | 17.3 | [STMask_plus_base_OVIS.pth](https://drive.google.com/file/d/1lw2YSEO58kDOgqtg6tlZueCCQkLMV1QX/view?usp=sharing) | [stdout.txt](https://drive.google.com/file/d/1-1z8hPzMPWZp_-Rk9kxILCSkB8Ec7OM0/view?usp=sharing) |
-| [384,640]        | R101-DCN-FPN  | FCA  | FCB(ada) | TF | 15.8 | [STMask_plus_base_ada_OVIS.pth](https://drive.google.com/file/d/1zJazhMlrYHydnHggKhBjiICVVWpr5djS/view?usp=sharing)  | - |  
+| Backbone      | FCA  | FCB      | TF | mAP* | Weights | Results|                                                                                                        
+|:-------------:|:----:|:----:    |----|------|-----------------------------------------------------------------------------------------------------------|------|
+| R50-DCN-FPN   | FCA  | -        | TF | 15.4 | [STMask_plus_resnet50_OVIS.pth](https://drive.google.com/file/d/18aij_6YboxVzScc0Nmcb50nb0uczal6P/view?usp=sharing) | - |
+| R50-DCN-FPN   | FCA  | FCB(ada) | TF | 15.4 | [STMask_plus_resnet50_ada_OVIS.pth](https://drive.google.com/file/d/10qx2dBeksHlNxG5nmPaNOyz35Bl6u2uQ/view?usp=sharing) | [stdout.txt](https://drive.google.com/file/d/1jD_O1YMERQqXwi1m90PnfUj3NNduWz1W/view?usp=sharing) |
+| R101-DCN-FPN  | FCA  | -        | TF | 17.3 | [STMask_plus_base_OVIS.pth](https://drive.google.com/file/d/1lw2YSEO58kDOgqtg6tlZueCCQkLMV1QX/view?usp=sharing) | [stdout.txt](https://drive.google.com/file/d/1-1z8hPzMPWZp_-Rk9kxILCSkB8Ec7OM0/view?usp=sharing) |
+| R101-DCN-FPN  | FCA  | FCB(ada) | TF | 15.8 | [STMask_plus_base_ada_OVIS.pth](https://drive.google.com/file/d/1zJazhMlrYHydnHggKhBjiICVVWpr5djS/view?usp=sharing)  | - |  
 
 
 To evalute the model, put the corresponding weights file in the `./weights` directory and run one of the following commands. The name of each config is everything before the numbers in the file name (e.g., `STMask_plus_base` for `STMask_plus_base.pth`). 
